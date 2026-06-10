@@ -31,11 +31,11 @@ All three platforms use the [Groq API](https://console.groq.com) (free tier) wit
 
 ## Platform Support
 
-| Platform | Mechanism | Distribution | Status |
-|----------|-----------|--------------|--------|
-| Android 8+ | `AccessibilityService` | APK (build from source) | ✅ Live |
+| Platform | Mechanism | Download | Status |
+|----------|-----------|----------|--------|
+| Android 8+ | `AccessibilityService` | [TypeShift-android.apk](https://github.com/nayalambaliya/TypeShift/releases/latest) | ✅ Live |
 | iOS 17+ | `UIInputViewController` (Keyboard Extension) | Build with Xcode | ✅ Live |
-| macOS 13+ | `AXUIElement` + `NSMenuBarExtra` | [Download ZIP](#download) | ✅ Live |
+| macOS 13+ | `AXUIElement` + `NSMenuBarExtra` | [TypeShift-macOS.zip](https://github.com/nayalambaliya/TypeShift/releases/latest) | ✅ Live |
 
 ---
 
@@ -142,7 +142,10 @@ User types "Hello world?fix " in any app
 6. Go to **System Settings → Privacy & Security → Accessibility** → enable TypeShift
 
 ### Android
-Build from source (see below) — APK available in [Releases](https://github.com/nayalambaliya/TypeShift/releases/latest) when published.
+1. Download `TypeShift-android.apk` from [Releases](https://github.com/nayalambaliya/TypeShift/releases/latest)
+2. On your Android phone: **Settings → Apps → Install unknown apps** → allow your browser or Files app
+3. Open the downloaded APK and tap Install
+4. Open TypeShift → enter your free [Groq API key](https://console.groq.com) → enable the Accessibility Service → enable the keyboard
 
 ### iOS
 Build from source with Xcode (see below) — no App Store distribution without a paid Apple Developer account.
