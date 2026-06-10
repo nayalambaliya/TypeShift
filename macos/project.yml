@@ -1,0 +1,32 @@
+name: TypeShiftMac
+options:
+  bundleIdPrefix: com.nayal
+  deploymentTarget:
+    macOS: "13.0"
+  xcodeVersion: "16"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MACOSX_DEPLOYMENT_TARGET: "13.0"
+
+targets:
+  TypeShiftMac:
+    type: application
+    platform: macOS
+    deploymentTarget: "13.0"
+    sources: [TypeShiftMac]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nayal.typeshift.mac
+        INFOPLIST_FILE: TypeShiftMac/Info.plist
+        GENERATE_INFOPLIST_FILE: "NO"
+        PRODUCT_NAME: TypeShift
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGNING_REQUIRED: "YES"
+        CODE_SIGNING_ALLOWED: "YES"
+    entitlements:
+      path: TypeShiftMac/TypeShiftMac.entitlements
+      properties:
+        com.apple.security.app-sandbox: false

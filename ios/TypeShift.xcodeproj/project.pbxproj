@@ -1,0 +1,429 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0191C35CFFBA90DC43E61022 /* TypeShiftApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2A780B7FE31A9445C06E42E /* TypeShiftApp.swift */; };
+		0B5AC98E4DD7F2D35645C2D7 /* KeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A6D1C24A3AC071532D4B64 /* KeyboardView.swift */; };
+		305CA8771D12031F17F6C88A /* AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = E201671BEF7656056892A0F0 /* AppGroup.swift */; };
+		38C3A5FB72BDE795790FE420 /* AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = E201671BEF7656056892A0F0 /* AppGroup.swift */; };
+		86A71B1918A1C837FED51389 /* KeyboardModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1611A4ED3F635DD47EAD6C /* KeyboardModel.swift */; };
+		91C4EE71BF12757747476651 /* KeyboardViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD68EF86103736ED4970F507 /* KeyboardViewController.swift */; };
+		965789F65C43B671FD5736DD /* GroqAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = F347F31FE1E04782DC3090FE /* GroqAPI.swift */; };
+		9DAC978FE8C0CCFA09480083 /* GroqAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = F347F31FE1E04782DC3090FE /* GroqAPI.swift */; };
+		A0C9FAC6CFDCC25F4A586706 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 431F7350A16C1DD5B3D72D78 /* ContentView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		1ECFEBBA6C66DB789D2DA0EF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 98E0C93E3AB22C207BE0DFC6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1F028F56F365C17E663F89FC;
+			remoteInfo = TypeShift;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		03A6D1C24A3AC071532D4B64 /* KeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardView.swift; sourceTree = "<group>"; };
+		098094C4645DDEF170561E7D /* TypeShift.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TypeShift.entitlements; sourceTree = "<group>"; };
+		2056771A283AC848132440B8 /* TypeShift.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = TypeShift.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2EBF17299E41464E1D06C625 /* TypeShiftKeyboard.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = TypeShiftKeyboard.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		431F7350A16C1DD5B3D72D78 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		671B779DADDB4542F9A9D239 /* TypeShiftKeyboard.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TypeShiftKeyboard.entitlements; sourceTree = "<group>"; };
+		81F7884BADB744F54DA5A3B5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		A2A780B7FE31A9445C06E42E /* TypeShiftApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypeShiftApp.swift; sourceTree = "<group>"; };
+		BD68EF86103736ED4970F507 /* KeyboardViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardViewController.swift; sourceTree = "<group>"; };
+		DB8385BBDF304CCF7552AADF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		E201671BEF7656056892A0F0 /* AppGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGroup.swift; sourceTree = "<group>"; };
+		F347F31FE1E04782DC3090FE /* GroqAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroqAPI.swift; sourceTree = "<group>"; };
+		FC1611A4ED3F635DD47EAD6C /* KeyboardModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardModel.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		242B6C45092E3BDEECB18BDD /* TypeShiftKeyboard */ = {
+			isa = PBXGroup;
+			children = (
+				81F7884BADB744F54DA5A3B5 /* Info.plist */,
+				FC1611A4ED3F635DD47EAD6C /* KeyboardModel.swift */,
+				03A6D1C24A3AC071532D4B64 /* KeyboardView.swift */,
+				BD68EF86103736ED4970F507 /* KeyboardViewController.swift */,
+				671B779DADDB4542F9A9D239 /* TypeShiftKeyboard.entitlements */,
+			);
+			path = TypeShiftKeyboard;
+			sourceTree = "<group>";
+		};
+		454A86E64998C9E4F64E51AD /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				E201671BEF7656056892A0F0 /* AppGroup.swift */,
+				F347F31FE1E04782DC3090FE /* GroqAPI.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		9C1D4AE4C4562182F90B4152 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2056771A283AC848132440B8 /* TypeShift.app */,
+				2EBF17299E41464E1D06C625 /* TypeShiftKeyboard.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D717C8669CCD3A4479A8093D /* TypeShift */ = {
+			isa = PBXGroup;
+			children = (
+				431F7350A16C1DD5B3D72D78 /* ContentView.swift */,
+				DB8385BBDF304CCF7552AADF /* Info.plist */,
+				098094C4645DDEF170561E7D /* TypeShift.entitlements */,
+				A2A780B7FE31A9445C06E42E /* TypeShiftApp.swift */,
+			);
+			path = TypeShift;
+			sourceTree = "<group>";
+		};
+		F82F857B5A1420E428357821 = {
+			isa = PBXGroup;
+			children = (
+				454A86E64998C9E4F64E51AD /* Shared */,
+				D717C8669CCD3A4479A8093D /* TypeShift */,
+				242B6C45092E3BDEECB18BDD /* TypeShiftKeyboard */,
+				9C1D4AE4C4562182F90B4152 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1F028F56F365C17E663F89FC /* TypeShift */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 33AF4BBDC1F27E8BEDBBC623 /* Build configuration list for PBXNativeTarget "TypeShift" */;
+			buildPhases = (
+				116E1D984A98ED5CC11AC0EA /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TypeShift;
+			packageProductDependencies = (
+			);
+			productName = TypeShift;
+			productReference = 2056771A283AC848132440B8 /* TypeShift.app */;
+			productType = "com.apple.product-type.application";
+		};
+		AF1BF4E1EA06BA0C394234FC /* TypeShiftKeyboard */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FC9AEF75B6ED3F57443832D8 /* Build configuration list for PBXNativeTarget "TypeShiftKeyboard" */;
+			buildPhases = (
+				A7469345856AEF5469E2CC1B /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9B8C726B0C805DCA6F30D680 /* PBXTargetDependency */,
+			);
+			name = TypeShiftKeyboard;
+			packageProductDependencies = (
+			);
+			productName = TypeShiftKeyboard;
+			productReference = 2EBF17299E41464E1D06C625 /* TypeShiftKeyboard.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		98E0C93E3AB22C207BE0DFC6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = E11CE990816DDB61562D7217 /* Build configuration list for PBXProject "TypeShift" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = F82F857B5A1420E428357821;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 9C1D4AE4C4562182F90B4152 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1F028F56F365C17E663F89FC /* TypeShift */,
+				AF1BF4E1EA06BA0C394234FC /* TypeShiftKeyboard */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		116E1D984A98ED5CC11AC0EA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				38C3A5FB72BDE795790FE420 /* AppGroup.swift in Sources */,
+				A0C9FAC6CFDCC25F4A586706 /* ContentView.swift in Sources */,
+				965789F65C43B671FD5736DD /* GroqAPI.swift in Sources */,
+				0191C35CFFBA90DC43E61022 /* TypeShiftApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A7469345856AEF5469E2CC1B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				305CA8771D12031F17F6C88A /* AppGroup.swift in Sources */,
+				9DAC978FE8C0CCFA09480083 /* GroqAPI.swift in Sources */,
+				86A71B1918A1C837FED51389 /* KeyboardModel.swift in Sources */,
+				0B5AC98E4DD7F2D35645C2D7 /* KeyboardView.swift in Sources */,
+				91C4EE71BF12757747476651 /* KeyboardViewController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		9B8C726B0C805DCA6F30D680 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1F028F56F365C17E663F89FC /* TypeShift */;
+			targetProxy = 1ECFEBBA6C66DB789D2DA0EF /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		055573665EEB5388198C8E19 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = TypeShift/TypeShift.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TypeShift/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.nayal.typeshift;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		0BB635C236E39B84DCF857CF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		1E535F56E1ED6705BC53BB80 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		2FAA56B8F1EDF7512BBB4D29 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = TypeShift/TypeShift.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TypeShift/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.nayal.typeshift;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		AD7A92A895B69EA90EEF6082 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = TypeShiftKeyboard/TypeShiftKeyboard.entitlements;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TypeShiftKeyboard/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.nayal.typeshift.keyboard;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		BB605768696F8AF9E8E70DA7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = TypeShiftKeyboard/TypeShiftKeyboard.entitlements;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TypeShiftKeyboard/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.nayal.typeshift.keyboard;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		33AF4BBDC1F27E8BEDBBC623 /* Build configuration list for PBXNativeTarget "TypeShift" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				055573665EEB5388198C8E19 /* Debug */,
+				2FAA56B8F1EDF7512BBB4D29 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E11CE990816DDB61562D7217 /* Build configuration list for PBXProject "TypeShift" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0BB635C236E39B84DCF857CF /* Debug */,
+				1E535F56E1ED6705BC53BB80 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		FC9AEF75B6ED3F57443832D8 /* Build configuration list for PBXNativeTarget "TypeShiftKeyboard" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AD7A92A895B69EA90EEF6082 /* Debug */,
+				BB605768696F8AF9E8E70DA7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 98E0C93E3AB22C207BE0DFC6 /* Project object */;
+}

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This file tells Android about our keyboard and where its settings screen is -->
+<input-method xmlns:android="http://schemas.android.com/apk/res/android"
+    android:settingsActivity="com.nayal.aikeyboard.MainActivity" />

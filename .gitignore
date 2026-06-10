@@ -1,0 +1,25 @@
+# ── Android ───────────────────────────────────────────────────
+android/.gradle/
+android/.idea/
+android/local.properties
+android/app/build/
+android/build/
+android/.kotlin/
+*.apk
+*.aab
+
+# ── iOS / macOS (Xcode) ───────────────────────────────────────
+ios/build/
+macos/build/
+**/*.xcodeproj/xcuserdata/
+**/*.xcworkspace/xcuserdata/
+**/*.xcworkspace/
+DerivedData/
+*.ipa
+xcuserdata/
+.DS_Store
+
+# ── General ───────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.log

@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">TypeShift</string>
+    <string name="accessibility_service_description">Watches for trigger commands like ?fix or ?improve and replaces your text using AI.</string>
+</resources>

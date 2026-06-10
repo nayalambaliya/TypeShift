@@ -1,0 +1,47 @@
+name: Build macOS Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-macos:
+    runs-on: macos-15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install xcodegen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: macos
+        run: xcodegen generate
+
+      - name: Build
+        working-directory: macos
+        run: |
+          xcodebuild \
+            -scheme TypeShiftMac \
+            -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=YES \
+            CODE_SIGNING_ALLOWED=YES
+
+      - name: Package as ZIP
+        run: |
+          cd macos/build/Build/Products/Release
+          ditto -c -k --sequesterRsrc --keepParent TypeShift.app TypeShift-macOS.zip
+
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: macos/build/Build/Products/Release/TypeShift-macOS.zip
+          body: |
+            ## Installation (macOS)
+            1. Download `TypeShift-macOS.zip` and unzip it
+            2. Move `TypeShift.app` to your Applications folder
+            3. Right-click → Open (first launch only — bypasses Gatekeeper)
+            4. Open TypeShift from the menu bar, go to Settings, enter your free [Groq API key](https://console.groq.com)

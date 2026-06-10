@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ts_bg">#000000</color>
+    <color name="ts_surface">#141414</color>
+    <color name="ts_surface2">#1E1E1E</color>
+    <color name="ts_accent">#7B61FF</color>
+    <color name="ts_accent_light">#9E8FFF</color>
+    <color name="ts_white">#FFFFFF</color>
+    <color name="ts_text_sec">#8A8A8A</color>
+    <color name="ts_green">#34C759</color>
+    <color name="ts_red">#FF3B30</color>
+</resources>

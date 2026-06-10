@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This is the full keyboard layout shown to the user.
+     It has two parts: the AI toolbar on top, and the actual keys below. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#1A1A2E">
+
+    <!-- AI Toolbar: Fix, Improve, Formal, Casual, Simplify -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:scrollbars="none"
+        android:background="#16213E">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:gravity="center_vertical">
+
+            <Button
+                android:id="@+id/btn_fix"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="✦ Fix"
+                android:textSize="13sp"
+                android:backgroundTint="#0F3460"
+                android:textColor="#E94560"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/btn_improve"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="✦ Improve"
+                android:textSize="13sp"
+                android:backgroundTint="#0F3460"
+                android:textColor="#E94560"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/btn_formal"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="✦ Formal"
+                android:textSize="13sp"
+                android:backgroundTint="#0F3460"
+                android:textColor="#E94560"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/btn_casual"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="✦ Casual"
+                android:textSize="13sp"
+                android:backgroundTint="#0F3460"
+                android:textColor="#E94560"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/btn_simplify"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="✦ Simplify"
+                android:textSize="13sp"
+                android:backgroundTint="#0F3460"
+                android:textColor="#E94560" />
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- Loading bar shown while Gemini is thinking -->
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:indeterminate="true"
+        android:indeterminateTint="#E94560"
+        android:visibility="gone" />
+
+    <!-- The actual keyboard keys -->
+    <android.inputmethodservice.KeyboardView
+        android:id="@+id/keyboard_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:keyPreviewLayout="@null"
+        android:background="#1A1A2E" />
+
+</LinearLayout>
