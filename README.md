@@ -2,13 +2,13 @@
 
 # TypeShift
 
-**AI-powered text assistant that works in every app across Android, iOS, and macOS**
+**AI-powered text assistant that works in every app across Android, macOS, and Windows**
 
 Type a trigger like `?fix`, `?improve`, or `?formal` anywhere — TypeShift rewrites your text in-place using Groq's blazing-fast LLaMA 3.3 70B model.
 
 [![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](android/)
-[![iOS](https://img.shields.io/badge/iOS-000000?style=for-the-badge&logo=apple&logoColor=white)](ios/)
 [![macOS](https://img.shields.io/badge/macOS-000000?style=for-the-badge&logo=apple&logoColor=white)](macos/)
+[![Windows](https://img.shields.io/badge/Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white)](windows/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](android/)
 [![Swift](https://img.shields.io/badge/Swift-FA7343?style=for-the-badge&logo=swift&logoColor=white)](macos/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
@@ -22,10 +22,10 @@ Type a trigger like `?fix`, `?improve`, or `?formal` anywhere — TypeShift rewr
 TypeShift is a cross-platform AI writing assistant that hooks directly into the operating system — no copy-paste, no switching apps. It uses the platform's native accessibility API to read and rewrite text in any app you're using.
 
 - **Android** — Accessibility Service runs in the background, detects triggers as you type
-- **iOS** — Custom Keyboard Extension, works inside every app that accepts text input
 - **macOS** — Menu bar app using the macOS Accessibility API (AXUIElement), works in Notes, Mail, VS Code, browsers, and more
+- **Windows** — System tray app using UI Automation + global hotkeys, works in every Windows app
 
-All three platforms use the [Groq API](https://console.groq.com) (free tier) with `llama-3.3-70b-versatile` for near-instant responses.
+All platforms use the [Groq API](https://console.groq.com) (free tier) with `llama-3.3-70b-versatile` for near-instant responses.
 
 ---
 
@@ -34,8 +34,8 @@ All three platforms use the [Groq API](https://console.groq.com) (free tier) wit
 | Platform | Mechanism | Download | Status |
 |----------|-----------|----------|--------|
 | Android 8+ | `AccessibilityService` | [TypeShift-android.apk](https://github.com/nayalambaliya/TypeShift/releases/latest) | ✅ Live |
-| iOS 17+ | `UIInputViewController` (Keyboard Extension) | Build with Xcode | ✅ Live |
 | macOS 13+ | `AXUIElement` + `NSMenuBarExtra` | [TypeShift-macOS.zip](https://github.com/nayalambaliya/TypeShift/releases/latest) | ✅ Live |
+| Windows 10+ | UI Automation + Global Hotkeys | Coming soon | 🔧 In Progress |
 
 ---
 
@@ -79,16 +79,6 @@ Type any command at the end of your text, then press **Space** (Android/iOS) or 
 | AI | Groq REST API (`OkHttp`) |
 | Design | OxygenOS-inspired, AMOLED dark, `#7B61FF` accent |
 
-### iOS
-| Layer | Technology |
-|-------|-----------|
-| Language | Swift |
-| UI | SwiftUI + UIKit |
-| System Hook | `UIInputViewController` (Keyboard Extension) |
-| Text Access | `UITextDocumentProxy` |
-| Data Sharing | App Groups (`UserDefaults` shared suite) |
-| AI | Groq REST API (`URLSession`) |
-
 ### macOS
 | Layer | Technology |
 |-------|-----------|
@@ -109,7 +99,7 @@ User types "Hello world?fix " in any app
          │
          ▼
  ┌──────────────────┐
- │  OS Hook Layer   │  AccessibilityService / UITextDocumentProxy / AXUIElement
+ │  OS Hook Layer   │  AccessibilityService / AXUIElement / UI Automation
  │  detects trigger │
  └────────┬─────────┘
           │
@@ -147,9 +137,6 @@ User types "Hello world?fix " in any app
 3. Open the downloaded APK and tap Install
 4. Open TypeShift → enter your free [Groq API key](https://console.groq.com) → enable the Accessibility Service → enable the keyboard
 
-### iOS
-Build from source with Xcode (see below) — no App Store distribution without a paid Apple Developer account.
-
 ---
 
 ## Building from Source
@@ -171,26 +158,6 @@ cd TypeShift/android
 ```
 After install: open TypeShift → enter API key → enable Accessibility Service → enable keyboard in Settings.
 
-### iOS
-```bash
-# Requires Xcode 15+ and a physical iPhone (iOS 17+)
-git clone https://github.com/nayalambaliya/TypeShift.git
-cd TypeShift/ios
-
-# Install xcodegen if needed:
-brew install xcodegen
-
-# Generate Xcode project:
-xcodegen generate
-
-# Open in Xcode:
-open TypeShift.xcodeproj
-```
-1. Set your development team in Xcode (free Apple ID works for personal device)
-2. Build & run on your iPhone
-3. Go to **Settings → General → Keyboard → Keyboards → Add New Keyboard → TypeShift**
-4. Enable Full Access → enter your Groq API key in the TypeShift app
-
 ### macOS
 ```bash
 git clone https://github.com/nayalambaliya/TypeShift.git
@@ -210,6 +177,16 @@ cp -R build/Build/Products/Release/TypeShift.app /Applications/
 open /Applications/TypeShift.app
 ```
 
+### Windows
+```bash
+git clone https://github.com/nayalambaliya/TypeShift.git
+cd TypeShift/windows
+
+# Requires .NET 8 SDK (https://dotnet.microsoft.com/download)
+dotnet build -c Release
+dotnet run
+```
+
 ---
 
 ## License
@@ -219,5 +196,5 @@ MIT — see [LICENSE](LICENSE)
 ---
 
 <div align="center">
-  <sub>Built with Swift · Kotlin · Groq API · llama-3.3-70b-versatile</sub>
+  <sub>Built with Swift · Kotlin · C# · Groq API · llama-3.3-70b-versatile</sub>
 </div>

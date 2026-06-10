@@ -8,16 +8,20 @@ android/.kotlin/
 *.apk
 *.aab
 
-# ── iOS / macOS (Xcode) ───────────────────────────────────────
-ios/build/
+# ── macOS (Xcode) ─────────────────────────────────────────────
 macos/build/
 **/*.xcodeproj/xcuserdata/
 **/*.xcworkspace/xcuserdata/
 **/*.xcworkspace/
 DerivedData/
-*.ipa
 xcuserdata/
 .DS_Store
+
+# ── Windows (.NET) ────────────────────────────────────────────
+windows/bin/
+windows/obj/
+windows/.vs/
+*.user
 
 # ── General ───────────────────────────────────────────────────
 .DS_Store
