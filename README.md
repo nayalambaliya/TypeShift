@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="assets/logo.png" width="120" height="120" style="border-radius:24px"/>
+
 # TypeShift
 
 **AI-powered text assistant that works in every app across Android, macOS, and Windows**

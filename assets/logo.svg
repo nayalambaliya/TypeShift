@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+
+    <!-- Background gradient: deep dark purple → near black -->
+    <linearGradient id="bg" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#1A0F3C"/>
+      <stop offset="100%" stop-color="#080808"/>
+    </linearGradient>
+
+    <!-- Chevron gradient: light lavender → brand purple -->
+    <linearGradient id="chevronGrad" x1="0" y1="350" x2="0" y2="674" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#C4B5FF"/>
+      <stop offset="100%" stop-color="#7B61FF"/>
+    </linearGradient>
+
+    <!-- Ambient glow behind chevron -->
+    <radialGradient id="glowBg" cx="720" cy="512" r="240" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#7B61FF" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#7B61FF" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Glow filter on chevron -->
+    <filter id="chevronGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="14" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Subtle shadow under T -->
+    <filter id="tShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#7B61FF" flood-opacity="0.18"/>
+    </filter>
+
+  </defs>
+
+  <!-- App icon background -->
+  <rect width="1024" height="1024" rx="224" fill="url(#bg)"/>
+
+  <!-- Ambient purple glow (background atmosphere) -->
+  <rect width="1024" height="1024" rx="224" fill="url(#glowBg)"/>
+
+  <!-- ── T letterform (geometric, white) ── -->
+  <!-- Horizontal crossbar -->
+  <rect x="168" y="210" width="468" height="102" rx="16" fill="white" filter="url(#tShadow)"/>
+  <!-- Vertical stem — centered under crossbar -->
+  <rect x="363" y="210" width="102" height="574" rx="16" fill="white" filter="url(#tShadow)"/>
+
+  <!-- Cursor underline — purple, under the T stem -->
+  <rect x="168" y="818" width="280" height="10" rx="5" fill="#7B61FF" opacity="0.55"/>
+
+  <!-- ── Chevron › ── -->
+  <path d="M 710 350 L 856 512 L 710 674"
+        stroke="url(#chevronGrad)"
+        stroke-width="82"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        fill="none"
+        filter="url(#chevronGlow)"/>
+
+</svg>
