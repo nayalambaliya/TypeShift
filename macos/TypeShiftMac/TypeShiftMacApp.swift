@@ -15,7 +15,6 @@ struct TypeShiftMacApp: App {
 
         Settings {
             SettingsView()
-                .frame(width: 500)
                 .preferredColorScheme(.dark)
         }
     }
@@ -38,6 +37,8 @@ struct MenuBarIcon: View {
 struct MenuBarContent: View {
     @ObservedObject var monitor: TextMonitor
 
+    var customCommands: [CustomCommand] { loadCustomCommands() }
+
     var body: some View {
         // Status
         if monitor.isProcessing {
@@ -53,9 +54,8 @@ struct MenuBarContent: View {
             Divider()
         }
 
-        // Commands — click any command to process text in the current app.
-        // Works in browsers, VS Code, and all native apps.
-        Text("PROCESS TEXT IN CURRENT APP")
+        // Built-in commands
+        Text("BUILT-IN COMMANDS")
             .font(.system(size: 10, weight: .semibold))
             .foregroundStyle(.secondary)
 
@@ -69,6 +69,17 @@ struct MenuBarContent: View {
         Button("Add Emojis")   { monitor.processSelectedText("?emoji") }
         Button("Summarize")    { monitor.processSelectedText("?tldr") }
         Button("Make Human")   { monitor.processSelectedText("?human") }
+
+        // Custom commands (shown only if any exist)
+        if !customCommands.isEmpty {
+            Divider()
+            Text("MY COMMANDS")
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundStyle(.secondary)
+            ForEach(customCommands) { cmd in
+                Button(cmd.name) { monitor.processCustomCommand(cmd) }
+            }
+        }
 
         Divider()
 

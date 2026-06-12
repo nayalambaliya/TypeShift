@@ -85,6 +85,22 @@ final class TextMonitor: ObservableObject {
         AXIsProcessTrustedWithOptions(opts)
     }
 
+    /// Clears any stale TCC entry (common after fresh downloads or re-installs) then
+    /// opens System Settings directly to Accessibility so the user can re-grant.
+    func fixPermission() {
+        let task = Process()
+        task.launchPath = "/usr/bin/tccutil"
+        task.arguments  = ["reset", "Accessibility", "com.nayal.typeshift.mac"]
+        try? task.run()
+        task.waitUntilExit()
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                NSWorkspace.shared.open(url)
+            }
+        }
+    }
+
     private func startMonitor() {
         guard keyMonitor == nil else { return }
         keyMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
@@ -102,6 +118,17 @@ final class TextMonitor: ObservableObject {
 
     func stopMonitor() {
         if let m = keyMonitor { NSEvent.removeMonitor(m); keyMonitor = nil }
+    }
+
+    // ── Menu bar: run a custom command on selected text ───────
+    func processCustomCommand(_ cmd: CustomCommand) {
+        guard !isProcessing else { return }
+        let target = lastActiveApp
+        flash("⟳ Focusing…")
+        target?.activate(options: .activateIgnoringOtherApps)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.clipboardProcess(instruction: cmd.prompt, target: target)
+        }
     }
 
     // ── Menu bar command — re-focuses previous app, selects all, processes ──
@@ -350,8 +377,17 @@ final class TextMonitor: ObservableObject {
             if lower.hasSuffix(trig) {
                 let clean = String(trimmed.dropLast(trig.count)).trimmingCharacters(in: .whitespaces)
                 guard !clean.isEmpty else { return }
-                // Pass original `text` so replaceLastChars removes trailing spaces too
                 process(fullText: text, clean: clean, instruction: instr, in: el)
+                return
+            }
+        }
+
+        // User-defined custom commands
+        for cmd in loadCustomCommands() {
+            if lower.hasSuffix(cmd.trigger.lowercased()) {
+                let clean = String(trimmed.dropLast(cmd.trigger.count)).trimmingCharacters(in: .whitespaces)
+                guard !clean.isEmpty else { return }
+                process(fullText: text, clean: clean, instruction: cmd.prompt, in: el)
                 return
             }
         }
