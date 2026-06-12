@@ -75,68 +75,28 @@ enum NavTab: String, CaseIterable, Identifiable {
 // ── Root view ─────────────────────────────────────────────────
 struct SettingsView: View {
     @ObservedObject private var monitor = TextMonitor.shared
-    @State private var selectedTab: NavTab = .home
 
     var body: some View {
-        NavigationSplitView {
-            SidebarContent(selectedTab: $selectedTab)
-        } detail: {
-            ZStack {
-                cBg.ignoresSafeArea()
-                switch selectedTab {
-                case .home:     HomeTab(monitor: monitor)
-                case .commands: CommandsTab()
-                case .explore:  ExploreTab()
-                case .settings: SettingsTab()
-                }
-            }
+        TabView {
+            HomeTab(monitor: monitor)
+                .tabItem { Label("Home",     systemImage: "house.fill") }
+                .tag(NavTab.home)
+
+            CommandsTab()
+                .tabItem { Label("Commands", systemImage: "bolt.fill") }
+                .tag(NavTab.commands)
+
+            ExploreTab()
+                .tabItem { Label("Explore",  systemImage: "safari.fill") }
+                .tag(NavTab.explore)
+
+            SettingsTab()
+                .tabItem { Label("Settings", systemImage: "gearshape.fill") }
+                .tag(NavTab.settings)
         }
         .preferredColorScheme(.dark)
-        .frame(minWidth: 720, idealWidth: 720, minHeight: 520, idealHeight: 540)
-    }
-}
-
-// ── Sidebar ───────────────────────────────────────────────────
-struct SidebarContent: View {
-    @Binding var selectedTab: NavTab
-
-    var body: some View {
-        VStack(spacing: 0) {
-            // Logo header
-            HStack(spacing: 10) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(LinearGradient(
-                            colors: [Color(hex: "#3D2BFF"), cAccent],
-                            startPoint: .topLeading, endPoint: .bottomTrailing
-                        ))
-                        .frame(width: 36, height: 36)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .strokeBorder(Color.black.opacity(0.7), lineWidth: 2)
-                        )
-                    Text("T›")
-                        .font(.system(size: 15, weight: .heavy))
-                        .foregroundStyle(.white)
-                }
-                Text("TypeShift")
-                    .font(.system(size: 15, weight: .bold))
-                    .foregroundStyle(cPrim)
-                Spacer()
-            }
-            .padding(.horizontal, 14)
-            .padding(.top, 18)
-            .padding(.bottom, 12)
-
-            Divider().opacity(0.3)
-
-            List(NavTab.allCases, selection: $selectedTab) { tab in
-                Label(tab.label, systemImage: tab.icon).tag(tab)
-            }
-            .listStyle(.sidebar)
-        }
-        .background(cSurf1)
-        .navigationSplitViewColumnWidth(180)
+        .frame(width: 600, height: 540)
+        .background(cBg)
     }
 }
 
