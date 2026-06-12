@@ -100,6 +100,19 @@ class AiAccessibilityService : AccessibilityService() {
                 return
             }
         }
+
+        // Check custom user-defined commands
+        val customCommands = loadCustomCommands(this)
+        for (cc in customCommands) {
+            if (text.trimEnd().endsWith(cc.trigger, ignoreCase = true)) {
+                val cleanText = text.trimEnd().dropLast(cc.trigger.length).trim()
+                if (cleanText.isEmpty()) { source.recycle(); return }
+                if (!isProcessing.compareAndSet(false, true)) { source.recycle(); return }
+                processText(source, cleanText, cc.prompt)
+                return
+            }
+        }
+
         source.recycle()
     }
 
@@ -211,9 +224,11 @@ class AiAccessibilityService : AccessibilityService() {
         conn.connectTimeout = 15000
         conn.readTimeout = 30000
 
+        val prefs2 = getSharedPreferences("ai_keyboard_prefs", Context.MODE_PRIVATE)
+        val temperature = prefs2.getFloat("ai_temperature", 0.7f)
         val safeText = text.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n")
         val safeInstruction = instruction.replace("\"", "\\\"")
-        val body = """{"model":"llama-3.3-70b-versatile","messages":[{"role":"user","content":"$safeInstruction\n\nText:\n$safeText"}]}"""
+        val body = """{"model":"llama-3.3-70b-versatile","temperature":$temperature,"messages":[{"role":"user","content":"$safeInstruction\n\nText:\n$safeText"}]}"""
 
         OutputStreamWriter(conn.outputStream).use { it.write(body) }
 
