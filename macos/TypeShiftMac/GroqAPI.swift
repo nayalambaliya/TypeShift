@@ -22,7 +22,6 @@ func callGroq(text: String, instruction: String, apiKey: String) async throws ->
     req.setValue("application/json",  forHTTPHeaderField: "Content-Type")
     req.timeoutInterval = 20
 
-    let temperature = UserDefaults.standard.object(forKey: "ai_temperature") as? Double ?? 0.7
     let body: [String: Any] = [
         "model": "llama-3.3-70b-versatile",
         "messages": [
@@ -30,7 +29,7 @@ func callGroq(text: String, instruction: String, apiKey: String) async throws ->
             ["role": "user",   "content": text]
         ],
         "max_tokens": 2048,
-        "temperature": temperature
+        "temperature": UserDefaults.standard.object(forKey: "ai_temperature") as? Double ?? 0.7
     ]
     req.httpBody = try JSONSerialization.data(withJSONObject: body)
 
