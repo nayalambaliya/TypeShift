@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release tag (e.g. v1.3)'
+        required: true
+        default: 'v1.3'
 
 permissions:
   contents: write
@@ -39,6 +45,7 @@ jobs:
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.event.inputs.tag_name || github.ref_name }}
           files: TypeShift-android.apk
           body: |
             ## Installation (Android)
