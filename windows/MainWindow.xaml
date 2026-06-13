@@ -67,7 +67,7 @@
                                VerticalAlignment="Center"/>
                 </Border>
                 <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-                    <TextBlock Text="TypeShift" FontSize="22" FontWeight="ExtraBold" Foreground="White" LetterSpacing="-0.5"/>
+                    <TextBlock Text="TypeShift" FontSize="22" FontWeight="ExtraBold" Foreground="White"/>
                     <TextBlock x:Name="StatusLabel" Text="AI text assistant — works in every app"
                                FontSize="12" Foreground="#8A8A8A" Margin="0,1,0,0"/>
                 </StackPanel>

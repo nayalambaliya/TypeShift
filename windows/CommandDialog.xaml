@@ -77,19 +77,19 @@
         <!-- Name -->
         <TextBlock Text="Name" FontSize="12" FontWeight="SemiBold" Foreground="#8A8A8A" Margin="0,0,0,6"/>
         <TextBox x:Name="NameBox" Style="{StaticResource DarkTextBox}"
-                 PlaceholderText="e.g. Bullet Points" Margin="0,0,0,16"/>
+                 Tag="e.g. Bullet Points" Margin="0,0,0,16"/>
 
         <!-- Trigger -->
         <TextBlock Text="Trigger" FontSize="12" FontWeight="SemiBold" Foreground="#8A8A8A" Margin="0,0,0,6"/>
         <TextBox x:Name="TriggerBox" Style="{StaticResource DarkTextBox}"
-                 PlaceholderText="e.g. ?mybullet" FontFamily="Consolas" Margin="0,0,0,4"/>
+                 Tag="e.g. ?mybullet" FontFamily="Consolas" Margin="0,0,0,4"/>
         <TextBlock Text="Must start with ? — press Space after typing it to activate"
                    FontSize="11" Foreground="#444444" Margin="0,0,0,16"/>
 
         <!-- Prompt -->
         <TextBlock Text="AI Prompt" FontSize="12" FontWeight="SemiBold" Foreground="#8A8A8A" Margin="0,0,0,6"/>
         <TextBox x:Name="PromptBox" Style="{StaticResource DarkTextBox}"
-                 PlaceholderText="e.g. Convert the following text into bullet points. Return only the result."
+                 Tag="e.g. Convert the following text into bullet points. Return only the result."
                  TextWrapping="Wrap" AcceptsReturn="True" Height="90"
                  VerticalScrollBarVisibility="Auto" Margin="0,0,0,6"/>
         <TextBlock Text="Tip: end with &quot;Return only the result, nothing else.&quot;"

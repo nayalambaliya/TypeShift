@@ -10,7 +10,7 @@
             <SolidColorBrush x:Key="Surf2Brush"   Color="#1A1A1A"/>
             <SolidColorBrush x:Key="Surf3Brush"   Color="#242424"/>
             <SolidColorBrush x:Key="AccentBrush"  Color="#7B61FF"/>
-            <SolidColorBrush x:Key="AccentLtBrush"Color="#9E8FFF"/>
+            <SolidColorBrush x:Key="AccentLtBrush" Color="#9E8FFF"/>
             <SolidColorBrush x:Key="PrimBrush"    Color="#FFFFFF"/>
             <SolidColorBrush x:Key="SecBrush"     Color="#8A8A8A"/>
             <SolidColorBrush x:Key="TertBrush"    Color="#444444"/>
@@ -83,8 +83,21 @@
                                     BorderThickness="{TemplateBinding BorderThickness}"
                                     CornerRadius="10"
                                     Padding="{TemplateBinding Padding}">
-                                <ScrollViewer x:Name="PART_ContentHost"/>
+                                <Grid>
+                                    <ScrollViewer x:Name="PART_ContentHost"/>
+                                    <TextBlock x:Name="Watermark"
+                                               Text="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}"
+                                               Foreground="#4A4A4A"
+                                               IsHitTestVisible="False"
+                                               VerticalAlignment="Top"
+                                               Visibility="Collapsed"/>
+                                </Grid>
                             </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="Text" Value="">
+                                    <Setter TargetName="Watermark" Property="Visibility" Value="Visible"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
