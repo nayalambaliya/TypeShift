@@ -6,10 +6,9 @@ import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.animateColor
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -17,10 +16,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
@@ -30,14 +27,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.googlefonts.Font
 import androidx.compose.ui.text.googlefonts.GoogleFont
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
@@ -51,43 +50,54 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID
 
-// ─────────────────────────────────────────────
-//  Colors — AMOLED dark
-// ─────────────────────────────────────────────
-val Bg        = Color(0xFF000000)
-val Surface1  = Color(0xFF0D0D0D)
-val Surface2  = Color(0xFF1A1A1A)
-val Surface3  = Color(0xFF242424)
-val Surface4  = Color(0xFF2E2E2E)
-val Accent    = Color(0xFF7B61FF)
-val AccentAlt = Color(0xFF9E8FFF)
-val AccentGlow= Color(0x407B61FF)
-val TextPrim  = Color(0xFFFFFFFF)
-val TextSec   = Color(0xFF8A8A8A)
-val TextTert  = Color(0xFF444444)
-val Success   = Color(0xFF34C759)
-val Danger    = Color(0xFFFF3B30)
-val Warning   = Color(0xFFFF9F0A)
+// ─── Aurora Palette ──────────────────────────────────────────────────────────
+val Bg        = Color(0xFF080812)
+val Surface1  = Color(0x0AFFFFFF)
+val Surface2  = Color(0x14FFFFFF)
+val Surface3  = Color(0x22FFFFFF)
+val Surface4  = Color(0x33FFFFFF)
+val Accent    = Color(0xFF8B5CF6)
+val AccentAlt = Color(0xFFA78BFA)
+val AccentGlow= Color(0x608B5CF6)
+val TextPrim  = Color(0xFFF1F5F9)
+val TextSec   = Color(0xFF94A3B8)
+val TextTert  = Color(0xFF475569)
+val Success   = Color(0xFF34D399)
+val Danger    = Color(0xFFF87171)
+val Warning   = Color(0xFFFBBF24)
 
-// ─────────────────────────────────────────────
-//  Font
-// ─────────────────────────────────────────────
+// Command category accent colors
+val CatEdit     = Color(0xFF60A5FA)   // blue  — grammar / editing
+val CatCreative = Color(0xFFFB923C)   // orange — creative / fun
+val CatUtil     = Color(0xFF34D399)   // green  — structure / utility
+val CatFun      = Color(0xFFF472B6)   // pink   — humor
+val CatLang     = Color(0xFFA78BFA)   // lavender — language
+val CatMeta     = Color(0xFF94A3B8)   // slate  — meta (undo, etc.)
+
+fun commandColor(trigger: String): Color = when {
+    trigger in setOf("?fix", "?improve", "?formal", "?casual", "?human", "?shorter", "?longer") -> CatEdit
+    trigger in setOf("?emoji", "?roast", "?headline") -> CatCreative
+    trigger in setOf("?joke", "?hinglish") -> CatFun
+    trigger in setOf("?bullet", "?tldr", "?subject", "?tweet", "?eli5", "?reply") -> CatUtil
+    trigger.startsWith("?translate") -> CatLang
+    else -> CatMeta
+}
+
+// ─── Font ─────────────────────────────────────────────────────────────────────
 private val gFonts = GoogleFont.Provider(
     providerAuthority = "com.google.android.gms.fonts",
     providerPackage   = "com.google.android.gms",
     certificates      = R.array.com_google_android_gms_fonts_certs
 )
 val AppFont = FontFamily(
-    Font(googleFont = GoogleFont("Outfit"), fontProvider = gFonts, weight = androidx.compose.ui.text.font.FontWeight.Normal),
-    Font(googleFont = GoogleFont("Outfit"), fontProvider = gFonts, weight = androidx.compose.ui.text.font.FontWeight.Medium),
-    Font(googleFont = GoogleFont("Outfit"), fontProvider = gFonts, weight = androidx.compose.ui.text.font.FontWeight.SemiBold),
-    Font(googleFont = GoogleFont("Outfit"), fontProvider = gFonts, weight = androidx.compose.ui.text.font.FontWeight.Bold),
-    Font(googleFont = GoogleFont("Outfit"), fontProvider = gFonts, weight = androidx.compose.ui.text.font.FontWeight.ExtraBold),
+    Font(googleFont = GoogleFont("Outfit"), fontProvider = gFonts, weight = FontWeight.Normal),
+    Font(googleFont = GoogleFont("Outfit"), fontProvider = gFonts, weight = FontWeight.Medium),
+    Font(googleFont = GoogleFont("Outfit"), fontProvider = gFonts, weight = FontWeight.SemiBold),
+    Font(googleFont = GoogleFont("Outfit"), fontProvider = gFonts, weight = FontWeight.Bold),
+    Font(googleFont = GoogleFont("Outfit"), fontProvider = gFonts, weight = FontWeight.ExtraBold),
 )
 
-// ─────────────────────────────────────────────
-//  Custom command model
-// ─────────────────────────────────────────────
+// ─── Models ───────────────────────────────────────────────────────────────────
 data class CustomCommand(
     val id: String = UUID.randomUUID().toString(),
     val trigger: String,
@@ -97,7 +107,7 @@ data class CustomCommand(
 
 fun loadCustomCommands(context: Context): List<CustomCommand> {
     val prefs = context.getSharedPreferences("ai_keyboard_prefs", Context.MODE_PRIVATE)
-    val json = prefs.getString("custom_commands", "[]") ?: "[]"
+    val json  = prefs.getString("custom_commands", "[]") ?: "[]"
     return try {
         val arr = JSONArray(json)
         (0 until arr.length()).map { i ->
@@ -126,9 +136,7 @@ fun saveCustomCommands(context: Context, commands: List<CustomCommand>) {
         .edit().putString("custom_commands", arr.toString()).apply()
 }
 
-// ─────────────────────────────────────────────
-//  Navigation
-// ─────────────────────────────────────────────
+// ─── Navigation ───────────────────────────────────────────────────────────────
 enum class NavTab { Home, Commands, Explore, Settings }
 
 data class NavItem(
@@ -139,15 +147,13 @@ data class NavItem(
 )
 
 val navItems = listOf(
-    NavItem(NavTab.Home,     "Home",     Icons.Filled.Home,     Icons.Outlined.Home),
-    NavItem(NavTab.Commands, "Commands", Icons.Filled.Bolt,     Icons.Outlined.Bolt),
-    NavItem(NavTab.Explore,  "Explore",  Icons.Filled.Explore,  Icons.Outlined.Explore),
-    NavItem(NavTab.Settings, "Settings", Icons.Filled.Person,   Icons.Outlined.Person)
+    NavItem(NavTab.Home,     "Home",     Icons.Filled.Home,    Icons.Outlined.Home),
+    NavItem(NavTab.Commands, "Commands", Icons.Filled.Bolt,    Icons.Outlined.Bolt),
+    NavItem(NavTab.Explore,  "Explore",  Icons.Filled.Explore, Icons.Outlined.Explore),
+    NavItem(NavTab.Settings, "Settings", Icons.Filled.Person,  Icons.Outlined.Person)
 )
 
-// ─────────────────────────────────────────────
-//  Entry
-// ─────────────────────────────────────────────
+// ─── Entry ────────────────────────────────────────────────────────────────────
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -155,86 +161,108 @@ class MainActivity : ComponentActivity() {
             MaterialTheme(
                 colorScheme = darkColorScheme(
                     background   = Bg,
-                    surface      = Surface1,
+                    surface      = Color(0xFF0D0D1F),
                     primary      = Accent,
                     onPrimary    = TextPrim,
                     onBackground = TextPrim,
                     onSurface    = TextPrim
                 )
-            ) {
-                TypeShiftApp()
-            }
+            ) { TypeShiftApp() }
         }
     }
 }
 
-// ─────────────────────────────────────────────
-//  Root app shell with bottom nav
-// ─────────────────────────────────────────────
+// ─── Animated Aurora background ───────────────────────────────────────────────
+@Composable
+fun AuroraBg(modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {
+    val tr = rememberInfiniteTransition(label = "aurora")
+    val c1 by tr.animateColor(
+        initialValue  = Color(0xFF0D0A20),
+        targetValue   = Color(0xFF080D1E),
+        animationSpec = infiniteRepeatable(tween(9000, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+        label = "c1"
+    )
+    val c2 by tr.animateColor(
+        initialValue  = Color(0xFF06080F),
+        targetValue   = Color(0xFF0C0A1C),
+        animationSpec = infiniteRepeatable(tween(7000, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+        label = "c2"
+    )
+    Box(
+        modifier = modifier.background(
+            Brush.linearGradient(
+                listOf(c1, Color(0xFF080812), c2),
+                start = Offset(0f, 0f),
+                end   = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
+            )
+        ),
+        content = content
+    )
+}
+
+// ─── Root shell ───────────────────────────────────────────────────────────────
 @Composable
 fun TypeShiftApp() {
     var selectedTab by remember { mutableStateOf(NavTab.Home) }
 
-    Scaffold(
-        containerColor = Bg,
-        bottomBar = {
-            TypeShiftNavBar(selected = selectedTab, onSelect = { selectedTab = it })
-        }
-    ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
-            when (selectedTab) {
-                NavTab.Home     -> HomeTab()
-                NavTab.Commands -> CommandsTab()
-                NavTab.Explore  -> ExploreTab()
-                NavTab.Settings -> SettingsTab()
+    AuroraBg(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            containerColor = Color.Transparent,
+            bottomBar = {
+                TypeShiftNavBar(selected = selectedTab, onSelect = { selectedTab = it })
+            }
+        ) { innerPadding ->
+            Box(modifier = Modifier.padding(innerPadding)) {
+                when (selectedTab) {
+                    NavTab.Home     -> HomeTab()
+                    NavTab.Commands -> CommandsTab()
+                    NavTab.Explore  -> ExploreTab()
+                    NavTab.Settings -> SettingsTab()
+                }
             }
         }
     }
 }
 
-// ─────────────────────────────────────────────
-//  Bottom navigation bar (Instagram-style)
-// ─────────────────────────────────────────────
+// ─── Bottom nav ───────────────────────────────────────────────────────────────
 @Composable
 fun TypeShiftNavBar(selected: NavTab, onSelect: (NavTab) -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Surface1)
+            .background(Brush.verticalGradient(listOf(Color.Transparent, Color(0xEA080812))))
     ) {
-        // Thin top divider
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(0.5.dp)
-                .background(Surface3)
+                .height(0.6.dp)
+                .background(Color.White.copy(alpha = 0.08f))
         )
         NavigationBar(
-            containerColor  = Color.Transparent,
-            tonalElevation  = 0.dp,
-            modifier        = Modifier.padding(top = 0.5.dp)
+            containerColor = Color.Transparent,
+            tonalElevation = 0.dp,
+            modifier       = Modifier.padding(top = 0.6.dp)
         ) {
             navItems.forEach { item ->
                 val isSelected = selected == item.tab
                 val iconScale by animateFloatAsState(
-                    targetValue = if (isSelected) 1.1f else 1f,
+                    targetValue   = if (isSelected) 1.12f else 1f,
                     animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
-                    label = "iconScale"
+                    label         = "scale"
                 )
                 val iconTint by animateColorAsState(
-                    targetValue = if (isSelected) Accent else TextSec,
-                    label = "iconTint"
+                    targetValue = if (isSelected) AccentAlt else TextSec,
+                    label       = "tint"
                 )
-
                 NavigationBarItem(
                     selected = isSelected,
                     onClick  = { onSelect(item.tab) },
                     icon = {
                         Icon(
-                            imageVector = if (isSelected) item.filledIcon else item.outlinedIcon,
+                            imageVector        = if (isSelected) item.filledIcon else item.outlinedIcon,
                             contentDescription = item.label,
-                            tint     = iconTint,
-                            modifier = Modifier.scale(iconScale)
+                            tint               = iconTint,
+                            modifier           = Modifier.scale(iconScale)
                         )
                     },
                     label = {
@@ -247,11 +275,11 @@ fun TypeShiftNavBar(selected: NavTab, onSelect: (NavTab) -> Unit) {
                         )
                     },
                     colors = NavigationBarItemDefaults.colors(
-                        indicatorColor         = AccentGlow,
-                        selectedIconColor      = Accent,
-                        unselectedIconColor    = TextSec,
-                        selectedTextColor      = Accent,
-                        unselectedTextColor    = TextSec
+                        indicatorColor      = Accent.copy(alpha = 0.20f),
+                        selectedIconColor   = AccentAlt,
+                        unselectedIconColor = TextSec,
+                        selectedTextColor   = AccentAlt,
+                        unselectedTextColor = TextSec
                     )
                 )
             }
@@ -259,9 +287,7 @@ fun TypeShiftNavBar(selected: NavTab, onSelect: (NavTab) -> Unit) {
     }
 }
 
-// ─────────────────────────────────────────────
-//  HOME TAB
-// ─────────────────────────────────────────────
+// ─── HOME TAB ─────────────────────────────────────────────────────────────────
 @Composable
 fun HomeTab() {
     val context   = LocalContext.current
@@ -275,48 +301,41 @@ fun HomeTab() {
     }
 
     val quickCommands = listOf(
-        "?fix" to "Fix grammar",
+        "?fix"     to "Fix Grammar",
         "?improve" to "Improve",
-        "?formal" to "Formal",
-        "?casual" to "Casual",
+        "?formal"  to "Formal",
+        "?casual"  to "Casual",
         "?shorter" to "Shorter",
-        "?emoji" to "Add emojis"
+        "?joke"    to "Get a Joke"
     )
 
     LazyColumn(
-        modifier            = Modifier.fillMaxSize().background(Bg),
+        modifier            = Modifier.fillMaxSize(),
         contentPadding      = PaddingValues(bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(0.dp)
     ) {
-        // Header
         item {
             HomeHeader(serviceOn) {
                 context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
             }
         }
-
-        // Stats row
         item {
             Spacer(Modifier.height(20.dp))
             StatsRow(context)
         }
-
-        // Quick commands
         item {
             Spacer(Modifier.height(24.dp))
             SectionLabel("Quick Commands")
             Spacer(Modifier.height(12.dp))
             LazyRow(
-                contentPadding      = PaddingValues(horizontal = 20.dp),
+                contentPadding        = PaddingValues(horizontal = 20.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 items(quickCommands) { (trigger, label) ->
-                    QuickCommandChip(trigger, label)
+                    QuickCommandChip(trigger, label, commandColor(trigger))
                 }
             }
         }
-
-        // Tip card
         item {
             Spacer(Modifier.height(24.dp))
             SectionLabel("Pro Tip")
@@ -328,48 +347,30 @@ fun HomeTab() {
 
 @Composable
 fun HomeHeader(serviceOn: Boolean, onEnable: () -> Unit) {
-    val statusColor = if (serviceOn) Success else Danger
-    val statusText  = if (serviceOn) "Active" else "Disabled"
-
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(
-                Brush.verticalGradient(listOf(Color(0xFF0D0B1A), Bg))
-            )
+            .background(Brush.verticalGradient(listOf(Color(0x601A0A40), Color.Transparent)))
             .padding(horizontal = 20.dp)
             .padding(top = 52.dp, bottom = 24.dp)
     ) {
         Column {
             // Logo row
-            Row(
-                verticalAlignment     = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // Logo pill with black border
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Box(
                     modifier = Modifier
-                        .size(44.dp)
+                        .size(46.dp)
                         .clip(RoundedCornerShape(14.dp))
+                        .background(Brush.linearGradient(listOf(Color(0xFF4C1D95), Accent)))
                         .border(
-                            width = 2.dp,
-                            brush = Brush.linearGradient(listOf(Color(0xFF2A2A2A), Color(0xFF111111))),
+                            width = 1.dp,
+                            brush = Brush.linearGradient(listOf(Color.White.copy(0.30f), Color.White.copy(0.05f))),
                             shape = RoundedCornerShape(14.dp)
-                        )
-                        .background(
-                            Brush.linearGradient(listOf(Color(0xFF3D2BFF), Color(0xFF7B61FF)))
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        "T›",
-                        fontFamily = AppFont,
-                        fontWeight = FontWeight.ExtraBold,
-                        fontSize   = 18.sp,
-                        color      = TextPrim
-                    )
+                    Text("T›", fontFamily = AppFont, fontWeight = FontWeight.ExtraBold, fontSize = 19.sp, color = TextPrim)
                 }
-
                 Column {
                     Text(
                         "TypeShift",
@@ -379,21 +380,13 @@ fun HomeHeader(serviceOn: Boolean, onEnable: () -> Unit) {
                         color         = TextPrim,
                         letterSpacing = (-0.5).sp
                     )
-                    Row(
-                        verticalAlignment  = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(7.dp)
-                                .clip(CircleShape)
-                                .background(statusColor)
-                        )
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                        Box(modifier = Modifier.size(6.dp).clip(CircleShape)
+                            .background(if (serviceOn) Success else Danger))
                         Text(
-                            "Service $statusText",
-                            fontFamily = AppFont,
-                            fontSize   = 12.sp,
-                            color      = statusColor
+                            if (serviceOn) "Service Active" else "Service Disabled",
+                            fontFamily = AppFont, fontSize = 12.sp,
+                            color      = if (serviceOn) Success else Danger
                         )
                     }
                 }
@@ -401,31 +394,26 @@ fun HomeHeader(serviceOn: Boolean, onEnable: () -> Unit) {
 
             Spacer(Modifier.height(20.dp))
 
-            // Status card
+            // Status glass card
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(20.dp))
+                    .background(Surface2)
                     .border(
                         width = 1.dp,
-                        color = if (serviceOn) Success.copy(alpha = 0.25f) else Danger.copy(alpha = 0.2f),
+                        brush = Brush.linearGradient(listOf(
+                            if (serviceOn) Success.copy(0.35f) else Danger.copy(0.30f),
+                            Color.White.copy(0.05f)
+                        )),
                         shape = RoundedCornerShape(20.dp)
                     )
-                    .background(Surface2)
                     .padding(20.dp)
             ) {
                 if (serviceOn) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(14.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(Success.copy(alpha = 0.12f)),
-                            contentAlignment = Alignment.Center
-                        ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                        Box(modifier = Modifier.size(42.dp).clip(CircleShape).background(Success.copy(0.12f)),
+                            contentAlignment = Alignment.Center) {
                             Icon(Icons.Filled.CheckCircle, null, tint = Success, modifier = Modifier.size(22.dp))
                         }
                         Column {
@@ -435,22 +423,14 @@ fun HomeHeader(serviceOn: Boolean, onEnable: () -> Unit) {
                     }
                 } else {
                     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(14.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .clip(CircleShape)
-                                    .background(Danger.copy(alpha = 0.12f)),
-                                contentAlignment = Alignment.Center
-                            ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                            Box(modifier = Modifier.size(42.dp).clip(CircleShape).background(Danger.copy(0.12f)),
+                                contentAlignment = Alignment.Center) {
                                 Icon(Icons.Filled.Warning, null, tint = Danger, modifier = Modifier.size(22.dp))
                             }
                             Column {
                                 Text("Service disabled", fontFamily = AppFont, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = TextPrim)
-                                Text("Enable to start detecting triggers", fontFamily = AppFont, fontSize = 13.sp, color = TextSec)
+                                Text("Tap below to enable", fontFamily = AppFont, fontSize = 13.sp, color = TextSec)
                             }
                         }
                         Button(
@@ -474,69 +454,43 @@ fun StatsRow(context: Context) {
     val hasKey      = (prefs.getString("gemini_api_key", "") ?: "").isNotEmpty()
     val customCount = loadCustomCommands(context).size
 
-    Row(
-        modifier              = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        StatChip(
-            modifier = Modifier.weight(1f),
-            icon     = Icons.Filled.Bolt,
-            value    = "19",
-            label    = "Commands"
-        )
-        StatChip(
-            modifier = Modifier.weight(1f),
-            icon     = Icons.Filled.Star,
-            value    = "$customCount",
-            label    = "Custom"
-        )
-        StatChip(
-            modifier = Modifier.weight(1f),
-            icon     = Icons.Filled.Key,
-            value    = if (hasKey) "Set" else "None",
-            label    = "API Key",
-            valueColor = if (hasKey) Success else Danger
-        )
+    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        StatChip(Modifier.weight(1f), Icons.Filled.Bolt, "20",           "Commands")
+        StatChip(Modifier.weight(1f), Icons.Filled.Star, "$customCount", "Custom")
+        StatChip(Modifier.weight(1f), Icons.Filled.Key,  if (hasKey) "Set" else "None", "API Key",
+            valueColor = if (hasKey) Success else Danger)
     }
 }
 
 @Composable
-fun StatChip(
-    modifier: Modifier = Modifier,
-    icon: ImageVector,
-    value: String,
-    label: String,
-    valueColor: Color = TextPrim
-) {
+fun StatChip(modifier: Modifier = Modifier, icon: ImageVector, value: String, label: String, valueColor: Color = TextPrim) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
             .background(Surface2)
-            .padding(vertical = 14.dp),
+            .border(1.dp, Brush.linearGradient(listOf(Color.White.copy(0.13f), Color.White.copy(0.02f))), RoundedCornerShape(16.dp))
+            .padding(vertical = 16.dp),
         contentAlignment = Alignment.Center
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Icon(icon, null, tint = Accent, modifier = Modifier.size(18.dp))
-            Text(value, fontFamily = AppFont, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = valueColor)
-            Text(label, fontFamily = AppFont, fontSize = 11.sp, color = TextSec)
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Icon(icon, null, tint = AccentAlt, modifier = Modifier.size(18.dp))
+            Text(value, fontFamily = AppFont, fontWeight = FontWeight.Bold,   fontSize = 18.sp, color = valueColor)
+            Text(label, fontFamily = AppFont, fontWeight = FontWeight.Normal, fontSize = 11.sp, color = TextSec)
         }
     }
 }
 
 @Composable
-fun QuickCommandChip(trigger: String, label: String) {
+fun QuickCommandChip(trigger: String, label: String, color: Color = Accent) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(50.dp))
-            .border(1.dp, AccentGlow, RoundedCornerShape(50.dp))
-            .background(Accent.copy(alpha = 0.08f))
+            .background(color.copy(alpha = 0.10f))
+            .border(1.dp, color.copy(alpha = 0.35f), RoundedCornerShape(50.dp))
             .padding(horizontal = 16.dp, vertical = 10.dp)
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(trigger, fontFamily = AppFont, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = AccentAlt)
+            Text(trigger, fontFamily = AppFont, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = color)
             Text(label,   fontFamily = AppFont, fontSize = 11.sp, color = TextSec)
         }
     }
@@ -549,46 +503,34 @@ fun TipCard() {
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
             .clip(RoundedCornerShape(20.dp))
-            .background(
-                Brush.linearGradient(listOf(Color(0xFF1A1040), Color(0xFF0D0D1A)))
-            )
-            .border(1.dp, Accent.copy(alpha = 0.2f), RoundedCornerShape(20.dp))
+            .background(Brush.linearGradient(listOf(Color(0x2A1A0A5A), Color(0x180A1428))))
+            .border(1.dp, Brush.linearGradient(listOf(Accent.copy(0.30f), Color(0xFF6366F1).copy(0.08f))), RoundedCornerShape(20.dp))
             .padding(20.dp)
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(Accent.copy(alpha = 0.15f)),
-                contentAlignment = Alignment.Center
-            ) {
+            Box(modifier = Modifier.size(40.dp).clip(CircleShape).background(Accent.copy(0.15f)), contentAlignment = Alignment.Center) {
                 Text("💡", fontSize = 20.sp)
             }
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text("Tip of the day", fontFamily = AppFont, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = AccentAlt)
                 Text(
-                    "Type your text, then add ?formal at the end and press space — TypeShift rewrites it instantly in any app.",
-                    fontFamily = AppFont,
-                    fontSize   = 13.sp,
-                    color      = TextSec,
-                    lineHeight = 20.sp
+                    "Type your text, add ?formal at the end and press space — TypeShift rewrites it instantly in any app.",
+                    fontFamily = AppFont, fontSize = 13.sp, color = TextSec, lineHeight = 20.sp
                 )
             }
         }
     }
 }
 
-// ─────────────────────────────────────────────
-//  COMMANDS TAB
-// ─────────────────────────────────────────────
+// ─── COMMANDS TAB ─────────────────────────────────────────────────────────────
 @Composable
 fun CommandsTab() {
     val context = LocalContext.current
-    var customCommands by remember { mutableStateOf(loadCustomCommands(context)) }
-    var showAddSheet   by remember { mutableStateOf(false) }
-    var editTarget     by remember { mutableStateOf<CustomCommand?>(null) }
+    var customCommands  by remember { mutableStateOf(loadCustomCommands(context)) }
+    var showAddSheet    by remember { mutableStateOf(false) }
+    var editTarget      by remember { mutableStateOf<CustomCommand?>(null) }
     var builtinExpanded by remember { mutableStateOf(true) }
+    var searchQuery     by remember { mutableStateOf("") }
 
     val builtinCommands = listOf(
         "?fix"          to "Fix grammar & spelling",
@@ -602,6 +544,7 @@ fun CommandsTab() {
         "?human"        to "Sound more human",
         "?hinglish"     to "Convert to Hinglish",
         "?roast"        to "Funny roast",
+        "?joke"         to "Random joke",
         "?tweet"        to "Shrink to a tweet",
         "?bullet"       to "Bullet points",
         "?subject"      to "Email subject line",
@@ -612,59 +555,114 @@ fun CommandsTab() {
         "?translate:XX" to "Translate any language"
     )
 
-    Box(modifier = Modifier.fillMaxSize().background(Bg)) {
-        LazyColumn(
-            modifier       = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 100.dp)
-        ) {
+    val filteredBuiltin = builtinCommands.filter { (trigger, desc) ->
+        searchQuery.isBlank() ||
+            trigger.contains(searchQuery, ignoreCase = true) ||
+            desc.contains(searchQuery, ignoreCase = true)
+    }
+    val filteredCustom = customCommands.filter { cmd ->
+        searchQuery.isBlank() ||
+            cmd.name.contains(searchQuery, ignoreCase = true) ||
+            cmd.trigger.contains(searchQuery, ignoreCase = true)
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 100.dp)) {
+
+            // Header
             item {
                 Spacer(Modifier.height(52.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment     = Alignment.CenterVertically
                 ) {
                     Text("Commands", fontFamily = AppFont, fontWeight = FontWeight.ExtraBold, fontSize = 28.sp, color = TextPrim)
-                    Text("${builtinCommands.size + customCommands.size} total", fontFamily = AppFont, fontSize = 13.sp, color = TextSec)
+                    Box(
+                        modifier = Modifier.clip(RoundedCornerShape(50.dp)).background(Surface3)
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            "${builtinCommands.size + customCommands.size}",
+                            fontFamily = AppFont, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = AccentAlt
+                        )
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+            }
+
+            // Raycast-style search bar
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Surface2)
+                        .border(1.dp, Brush.linearGradient(listOf(Color.White.copy(0.12f), Accent.copy(0.06f))), RoundedCornerShape(16.dp))
+                ) {
+                    OutlinedTextField(
+                        value         = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        placeholder   = { Text("Search commands…", fontFamily = AppFont, fontSize = 14.sp, color = TextTert) },
+                        leadingIcon   = { Icon(Icons.Outlined.Search, null, tint = TextSec, modifier = Modifier.size(20.dp)) },
+                        trailingIcon  = if (searchQuery.isNotEmpty()) {{
+                            Icon(Icons.Filled.Clear, null, tint = TextSec,
+                                modifier = Modifier.size(18.dp).clickable { searchQuery = "" })
+                        }} else null,
+                        modifier    = Modifier.fillMaxWidth(),
+                        singleLine  = true,
+                        colors      = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor   = Color.Transparent,
+                            unfocusedBorderColor = Color.Transparent,
+                            focusedTextColor     = TextPrim,
+                            unfocusedTextColor   = TextPrim,
+                            cursorColor          = AccentAlt
+                        ),
+                        textStyle = TextStyle(fontFamily = AppFont, fontSize = 14.sp, color = TextPrim),
+                        shape     = RoundedCornerShape(16.dp)
+                    )
                 }
                 Spacer(Modifier.height(20.dp))
             }
 
-            // Built-in section header
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
-                        .clickable { builtinExpanded = !builtinExpanded }
-                        .padding(vertical = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment     = Alignment.CenterVertically
-                ) {
-                    SectionLabel("Built-in  •  ${builtinCommands.size}")
-                    Icon(
-                        if (builtinExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                        null, tint = TextSec, modifier = Modifier.size(20.dp)
-                    )
-                }
-                Spacer(Modifier.height(8.dp))
-            }
-
-            if (builtinExpanded) {
+            // Built-in section
+            if (filteredBuiltin.isNotEmpty()) {
                 item {
-                    Box(
+                    Row(
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(Surface2)
+                            .clickable { builtinExpanded = !builtinExpanded }
+                            .padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment     = Alignment.CenterVertically
                     ) {
-                        Column {
-                            builtinCommands.forEachIndexed { index, (trigger, desc) ->
-                                CommandRow(trigger, desc)
-                                if (index < builtinCommands.lastIndex) {
-                                    HorizontalDivider(color = Surface3, thickness = 0.6.dp, modifier = Modifier.padding(horizontal = 16.dp))
+                        SectionLabel("Built-in  •  ${filteredBuiltin.size}")
+                        Icon(
+                            if (builtinExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                            null, tint = TextSec, modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Spacer(Modifier.height(8.dp))
+                }
+
+                if (builtinExpanded) {
+                    item {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(Surface2)
+                                .border(1.dp, Brush.linearGradient(listOf(Color.White.copy(0.10f), Color.White.copy(0.02f))), RoundedCornerShape(20.dp))
+                        ) {
+                            Column {
+                                filteredBuiltin.forEachIndexed { i, (trigger, desc) ->
+                                    CommandRow(trigger, desc)
+                                    if (i < filteredBuiltin.lastIndex)
+                                        HorizontalDivider(color = Color.White.copy(0.04f), thickness = 0.6.dp, modifier = Modifier.padding(horizontal = 16.dp))
                                 }
                             }
                         }
+                        Spacer(Modifier.height(24.dp))
                     }
-                    Spacer(Modifier.height(24.dp))
                 }
             }
 
@@ -675,24 +673,22 @@ fun CommandsTab() {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment     = Alignment.CenterVertically
                 ) {
-                    SectionLabel("My Commands  •  ${customCommands.size}")
+                    SectionLabel("My Commands  •  ${filteredCustom.size}")
                 }
                 Spacer(Modifier.height(8.dp))
             }
 
-            if (customCommands.isEmpty()) {
+            if (filteredCustom.isEmpty() && customCommands.isEmpty()) {
                 item {
                     Box(
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
                             .clip(RoundedCornerShape(20.dp))
-                            .border(1.dp, Surface3, RoundedCornerShape(20.dp))
+                            .background(Surface2)
+                            .border(1.dp, Color.White.copy(0.06f), RoundedCornerShape(20.dp))
                             .padding(32.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text("✦", fontSize = 28.sp)
                             Text("No custom commands yet", fontFamily = AppFont, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = TextPrim)
                             Text("Tap + to create your first one", fontFamily = AppFont, fontSize = 13.sp, color = TextSec)
@@ -700,10 +696,10 @@ fun CommandsTab() {
                     }
                 }
             } else {
-                items(customCommands, key = { it.id }) { cmd ->
+                items(filteredCustom, key = { it.id }) { cmd ->
                     CustomCommandItem(
-                        cmd = cmd,
-                        onEdit = { editTarget = it; showAddSheet = true },
+                        cmd      = cmd,
+                        onEdit   = { editTarget = it; showAddSheet = true },
                         onDelete = {
                             customCommands = customCommands.filter { it.id != cmd.id }
                             saveCustomCommands(context, customCommands)
@@ -716,11 +712,11 @@ fun CommandsTab() {
 
         // FAB
         FloatingActionButton(
-            onClick            = { editTarget = null; showAddSheet = true },
-            modifier           = Modifier.align(Alignment.BottomEnd).padding(24.dp),
-            containerColor     = Accent,
-            contentColor       = TextPrim,
-            shape              = CircleShape
+            onClick        = { editTarget = null; showAddSheet = true },
+            modifier       = Modifier.align(Alignment.BottomEnd).padding(24.dp),
+            containerColor = Accent,
+            contentColor   = TextPrim,
+            shape          = CircleShape
         ) {
             Icon(Icons.Filled.Add, "Add command", modifier = Modifier.size(26.dp))
         }
@@ -728,17 +724,16 @@ fun CommandsTab() {
 
     if (showAddSheet) {
         AddCommandSheet(
-            existing = editTarget,
+            existing  = editTarget,
             onDismiss = { showAddSheet = false; editTarget = null },
-            onSave = { cmd ->
-                customCommands = if (editTarget != null) {
+            onSave    = { cmd ->
+                customCommands = if (editTarget != null)
                     customCommands.map { if (it.id == cmd.id) cmd else it }
-                } else {
+                else
                     customCommands + cmd
-                }
                 saveCustomCommands(context, customCommands)
                 showAddSheet = false
-                editTarget = null
+                editTarget   = null
             }
         )
     }
@@ -746,18 +741,20 @@ fun CommandsTab() {
 
 @Composable
 fun CommandRow(trigger: String, desc: String) {
+    val cat = commandColor(trigger)
     Row(
-        modifier          = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 13.dp),
-        verticalAlignment = Alignment.CenterVertically,
+        modifier              = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 13.dp),
+        verticalAlignment     = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(50.dp))
-                .background(Accent.copy(alpha = 0.12f))
+                .background(cat.copy(alpha = 0.12f))
+                .border(1.dp, cat.copy(0.32f), RoundedCornerShape(50.dp))
                 .padding(horizontal = 10.dp, vertical = 4.dp)
         ) {
-            Text(trigger, fontFamily = AppFont, fontWeight = FontWeight.SemiBold, fontSize = 12.sp, color = AccentAlt, maxLines = 1)
+            Text(trigger, fontFamily = AppFont, fontWeight = FontWeight.SemiBold, fontSize = 12.sp, color = cat, maxLines = 1)
         }
         Text(desc, fontFamily = AppFont, fontSize = 14.sp, color = TextSec, modifier = Modifier.weight(1f))
     }
@@ -766,47 +763,36 @@ fun CommandRow(trigger: String, desc: String) {
 @Composable
 fun CustomCommandItem(cmd: CustomCommand, onEdit: (CustomCommand) -> Unit, onDelete: () -> Unit) {
     var showMenu by remember { mutableStateOf(false) }
-
     Box(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(Surface2)
+            .border(1.dp, Brush.linearGradient(listOf(Color.White.copy(0.10f), Color.White.copy(0.02f))), RoundedCornerShape(16.dp))
             .padding(16.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Box(
                 modifier = Modifier.size(40.dp).clip(RoundedCornerShape(12.dp))
-                    .background(Accent.copy(alpha = 0.15f)),
+                    .background(Accent.copy(0.15f))
+                    .border(1.dp, Accent.copy(0.22f), RoundedCornerShape(12.dp)),
                 contentAlignment = Alignment.Center
-            ) {
-                Text("✦", fontSize = 18.sp)
-            }
+            ) { Text("✦", fontSize = 18.sp) }
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(cmd.name, fontFamily = AppFont, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = TextPrim)
+                Text(cmd.name,    fontFamily = AppFont, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = TextPrim)
                 Text(cmd.trigger, fontFamily = AppFont, fontSize = 12.sp, color = AccentAlt)
-                Text(cmd.prompt, fontFamily = AppFont, fontSize = 12.sp, color = TextSec, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(cmd.prompt,  fontFamily = AppFont, fontSize = 12.sp, color = TextSec, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
             Box {
-                Icon(
-                    Icons.Filled.MoreVert, null, tint = TextSec,
-                    modifier = Modifier.clickable { showMenu = true }.padding(4.dp)
-                )
-                DropdownMenu(
-                    expanded         = showMenu,
-                    onDismissRequest = { showMenu = false },
-                    containerColor   = Surface3
-                ) {
+                Icon(Icons.Filled.MoreVert, null, tint = TextSec, modifier = Modifier.clickable { showMenu = true }.padding(4.dp))
+                DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }, containerColor = Color(0xFF14122A)) {
                     DropdownMenuItem(
-                        text    = { Text("Edit", fontFamily = AppFont, color = TextPrim) },
-                        onClick = { showMenu = false; onEdit(cmd) },
-                        leadingIcon = { Icon(Icons.Filled.Edit, null, tint = Accent) }
+                        text        = { Text("Edit",   fontFamily = AppFont, color = TextPrim) },
+                        onClick     = { showMenu = false; onEdit(cmd) },
+                        leadingIcon = { Icon(Icons.Filled.Edit,   null, tint = Accent) }
                     )
                     DropdownMenuItem(
-                        text    = { Text("Delete", fontFamily = AppFont, color = Danger) },
-                        onClick = { showMenu = false; onDelete() },
+                        text        = { Text("Delete", fontFamily = AppFont, color = Danger) },
+                        onClick     = { showMenu = false; onDelete() },
                         leadingIcon = { Icon(Icons.Filled.Delete, null, tint = Danger) }
                     )
                 }
@@ -825,8 +811,8 @@ fun AddCommandSheet(existing: CustomCommand?, onDismiss: () -> Unit, onSave: (Cu
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        containerColor   = Surface2,
-        dragHandle       = {
+        containerColor   = Color(0xFF0E0C1E),
+        dragHandle = {
             Box(
                 modifier = Modifier.padding(vertical = 12.dp)
                     .size(width = 36.dp, height = 4.dp)
@@ -836,42 +822,29 @@ fun AddCommandSheet(existing: CustomCommand?, onDismiss: () -> Unit, onSave: (Cu
         }
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-                .padding(bottom = 40.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 40.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
                 if (existing != null) "Edit Command" else "New Command",
                 fontFamily = AppFont, fontWeight = FontWeight.Bold, fontSize = 22.sp, color = TextPrim
             )
-
-            SheetField(label = "Name", value = name, placeholder = "e.g. Formal Email") { name = it }
-            SheetField(label = "Trigger", value = trigger, placeholder = "e.g. ?email") {
-                trigger = if (it.startsWith("?")) it else "?$it"
-            }
-            SheetField(label = "Prompt", value = prompt, placeholder = "e.g. Rewrite as a professional email…", singleLine = false) { prompt = it }
-
-            if (error != null) {
-                Text(error!!, fontFamily = AppFont, fontSize = 13.sp, color = Danger)
-            }
-
+            SheetField("Name",    name,    "e.g. Formal Email")                          { name    = it }
+            SheetField("Trigger", trigger, "e.g. ?email") { trigger = if (it.startsWith("?")) it else "?$it" }
+            SheetField("Prompt",  prompt,  "e.g. Rewrite as a professional email…", singleLine = false) { prompt = it }
+            if (error != null) Text(error!!, fontFamily = AppFont, fontSize = 13.sp, color = Danger)
             Button(
                 onClick = {
                     when {
                         name.isBlank()    -> error = "Name is required"
-                        trigger.length < 2 || !trigger.startsWith("?") -> error = "Trigger must start with ? and have a keyword"
+                        trigger.length < 2 || !trigger.startsWith("?") -> error = "Trigger must start with ?"
                         prompt.isBlank()  -> error = "Prompt is required"
-                        else -> {
-                            val cmd = CustomCommand(
-                                id      = existing?.id ?: UUID.randomUUID().toString(),
-                                trigger = trigger.trim().lowercase(),
-                                name    = name.trim(),
-                                prompt  = prompt.trim()
-                            )
-                            onSave(cmd)
-                        }
+                        else -> onSave(CustomCommand(
+                            id      = existing?.id ?: UUID.randomUUID().toString(),
+                            trigger = trigger.trim().lowercase(),
+                            name    = name.trim(),
+                            prompt  = prompt.trim()
+                        ))
                     }
                 },
                 modifier = Modifier.fillMaxWidth().height(52.dp),
@@ -889,63 +862,57 @@ fun SheetField(label: String, value: String, placeholder: String, singleLine: Bo
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(label, fontFamily = AppFont, fontWeight = FontWeight.Medium, fontSize = 13.sp, color = TextSec)
         Box(
-            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Surface3)
+            modifier = Modifier.fillMaxWidth()
+                .clip(RoundedCornerShape(14.dp))
+                .background(Surface3)
+                .border(1.dp, Color.White.copy(0.08f), RoundedCornerShape(14.dp))
         ) {
             OutlinedTextField(
-                value            = value,
-                onValueChange    = onValueChange,
-                placeholder      = { Text(placeholder, fontFamily = AppFont, fontSize = 14.sp, color = TextTert) },
-                modifier         = Modifier.fillMaxWidth(),
-                singleLine       = singleLine,
-                maxLines         = if (singleLine) 1 else 4,
-                colors           = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor   = Accent.copy(alpha = 0.5f),
+                value         = value,
+                onValueChange = onValueChange,
+                placeholder   = { Text(placeholder, fontFamily = AppFont, fontSize = 14.sp, color = TextTert) },
+                modifier      = Modifier.fillMaxWidth(),
+                singleLine    = singleLine,
+                maxLines      = if (singleLine) 1 else 4,
+                colors        = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor   = Accent.copy(0.4f),
                     unfocusedBorderColor = Color.Transparent,
-                    focusedTextColor     = TextPrim,
-                    unfocusedTextColor   = TextPrim,
-                    cursorColor          = Accent
+                    focusedTextColor     = TextPrim, unfocusedTextColor = TextPrim, cursorColor = AccentAlt
                 ),
-                textStyle = androidx.compose.ui.text.TextStyle(fontFamily = AppFont, fontSize = 14.sp, color = TextPrim),
+                textStyle = TextStyle(fontFamily = AppFont, fontSize = 14.sp, color = TextPrim),
                 shape     = RoundedCornerShape(14.dp)
             )
         }
     }
 }
 
-// ─────────────────────────────────────────────
-//  EXPLORE TAB
-// ─────────────────────────────────────────────
+// ─── EXPLORE TAB ──────────────────────────────────────────────────────────────
 @Composable
 fun ExploreTab() {
     val useCases = listOf(
-        "✍️" to "Writing" to "Use ?improve and ?formal to polish emails, essays, and reports in seconds.",
-        "💬" to "Messaging" to "Add ?casual or ?emoji to make your texts more fun and expressive.",
-        "🐦" to "Social Media" to "Turn any long thought into a viral tweet with ?tweet.",
-        "📧" to "Email" to "Generate the perfect subject line with ?subject — never blank again.",
-        "🌍" to "Translate" to "Type ?translate:french to instantly translate to any language.",
-        "🎤" to "Content" to "?headline turns plain text into attention-grabbing titles."
+        Triple("✍️", "Writing",      "Use ?improve and ?formal to polish emails, essays, and reports in seconds."),
+        Triple("💬", "Messaging",    "Add ?casual or ?emoji to make your texts more fun and expressive."),
+        Triple("🐦", "Social Media", "Turn any long thought into a viral tweet with ?tweet."),
+        Triple("📧", "Email",        "Generate the perfect subject line with ?subject — never blank again."),
+        Triple("🌍", "Translate",    "Type ?translate:french to instantly translate to any language."),
+        Triple("😂", "Just for Fun", "Type ?joke anywhere to get an instant AI-generated joke.")
     )
 
-    LazyColumn(
-        modifier       = Modifier.fillMaxSize().background(Bg),
-        contentPadding = PaddingValues(bottom = 32.dp)
-    ) {
+    LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
         item {
             Spacer(Modifier.height(52.dp))
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                Text("Explore", fontFamily = AppFont, fontWeight = FontWeight.ExtraBold, fontSize = 28.sp, color = TextPrim)
+                Text("Explore",  fontFamily = AppFont, fontWeight = FontWeight.ExtraBold, fontSize = 28.sp, color = TextPrim)
                 Text("Discover what TypeShift can do", fontFamily = AppFont, fontSize = 14.sp, color = TextSec)
             }
             Spacer(Modifier.height(24.dp))
         }
-
         item {
-            // Hero flow diagram
             Box(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
                     .clip(RoundedCornerShape(20.dp))
-                    .background(Brush.linearGradient(listOf(Color(0xFF1A1040), Color(0xFF0D1A20))))
-                    .border(1.dp, Accent.copy(0.15f), RoundedCornerShape(20.dp))
+                    .background(Brush.linearGradient(listOf(Color(0x28221060), Color(0x180A1428))))
+                    .border(1.dp, Brush.linearGradient(listOf(Accent.copy(0.30f), Color(0xFF6366F1).copy(0.08f))), RoundedCornerShape(20.dp))
                     .padding(20.dp)
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -959,14 +926,8 @@ fun ExploreTab() {
             }
             Spacer(Modifier.height(24.dp))
         }
-
-        item {
-            SectionLabel("Use Cases")
-            Spacer(Modifier.height(12.dp))
-        }
-
-        items(useCases) { (emojiTitle, desc) ->
-            val (emoji, title) = emojiTitle
+        item { SectionLabel("Use Cases"); Spacer(Modifier.height(12.dp)) }
+        items(useCases) { (emoji, title, desc) ->
             ExploreCard(emoji = emoji, title = title, desc = desc)
             Spacer(Modifier.height(10.dp))
         }
@@ -977,7 +938,9 @@ fun ExploreTab() {
 fun FlowStep(number: String, text: String) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Box(
-            modifier = Modifier.size(28.dp).clip(CircleShape).background(Accent.copy(0.2f)),
+            modifier = Modifier.size(28.dp).clip(CircleShape)
+                .background(Accent.copy(0.18f))
+                .border(1.dp, Accent.copy(0.32f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Text(number, fontFamily = AppFont, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = AccentAlt)
@@ -999,16 +962,16 @@ fun ExploreCard(emoji: String, title: String, desc: String) {
         modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(Surface2)
+            .border(1.dp, Brush.linearGradient(listOf(Color.White.copy(0.10f), Color.White.copy(0.02f))), RoundedCornerShape(16.dp))
             .padding(16.dp)
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             Box(
                 modifier = Modifier.size(44.dp).clip(RoundedCornerShape(12.dp))
-                    .background(Surface3),
+                    .background(Surface3)
+                    .border(1.dp, Color.White.copy(0.08f), RoundedCornerShape(12.dp)),
                 contentAlignment = Alignment.Center
-            ) {
-                Text(emoji, fontSize = 22.sp)
-            }
+            ) { Text(emoji, fontSize = 22.sp) }
             Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Text(title, fontFamily = AppFont, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = TextPrim)
                 Text(desc,  fontFamily = AppFont, fontSize = 13.sp, color = TextSec, lineHeight = 19.sp)
@@ -1017,18 +980,12 @@ fun ExploreCard(emoji: String, title: String, desc: String) {
     }
 }
 
-// ─────────────────────────────────────────────
-//  SETTINGS TAB
-// ─────────────────────────────────────────────
+// ─── SETTINGS TAB ─────────────────────────────────────────────────────────────
 @Composable
 fun SettingsTab() {
     val context = LocalContext.current
-    val prefs   = context.getSharedPreferences("ai_keyboard_prefs", Context.MODE_PRIVATE)
 
-    LazyColumn(
-        modifier       = Modifier.fillMaxSize().background(Bg),
-        contentPadding = PaddingValues(bottom = 40.dp)
-    ) {
+    LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 40.dp)) {
         item {
             Spacer(Modifier.height(52.dp))
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
@@ -1037,25 +994,10 @@ fun SettingsTab() {
             }
             Spacer(Modifier.height(24.dp))
         }
-
-        item {
-            ApiKeyCard(context)
-            Spacer(Modifier.height(16.dp))
-        }
-
-        item {
-            TemperatureCard(context)
-            Spacer(Modifier.height(16.dp))
-        }
-
-        item {
-            ModelInfoCard()
-            Spacer(Modifier.height(16.dp))
-        }
-
-        item {
-            AboutCard()
-        }
+        item { ApiKeyCard(context);      Spacer(Modifier.height(16.dp)) }
+        item { TemperatureCard(context); Spacer(Modifier.height(16.dp)) }
+        item { ModelInfoCard();          Spacer(Modifier.height(16.dp)) }
+        item { AboutCard() }
     }
 }
 
@@ -1066,41 +1008,46 @@ fun ApiKeyCard(context: Context) {
     var saved   by remember { mutableStateOf(false) }
     var showKey by remember { mutableStateOf(false) }
 
-    Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
-        .clip(RoundedCornerShape(20.dp)).background(Surface2).padding(20.dp)
+    Box(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(Surface2)
+            .border(1.dp, Brush.linearGradient(listOf(Color.White.copy(0.13f), Accent.copy(0.06f))), RoundedCornerShape(20.dp))
+            .padding(20.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Icon(Icons.Filled.Key, null, tint = Accent, modifier = Modifier.size(20.dp))
+                Icon(Icons.Filled.Key, null, tint = AccentAlt, modifier = Modifier.size(20.dp))
                 Text("Groq API Key", fontFamily = AppFont, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = TextPrim)
             }
             Text("Free, fast, no credit card required", fontFamily = AppFont, fontSize = 13.sp, color = TextSec)
-
-            Box(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Surface3)) {
+            Box(
+                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp))
+                    .background(Surface3).border(1.dp, Color.White.copy(0.08f), RoundedCornerShape(14.dp))
+            ) {
                 OutlinedTextField(
                     value                = key,
                     onValueChange        = { key = it; saved = false },
-                    placeholder          = { Text("gsk_...", fontFamily = AppFont, fontSize = 14.sp, color = TextTert) },
+                    placeholder          = { Text("gsk_…", fontFamily = AppFont, fontSize = 14.sp, color = TextTert) },
                     visualTransformation = if (showKey) VisualTransformation.None else PasswordVisualTransformation(),
                     modifier             = Modifier.fillMaxWidth(),
                     singleLine           = true,
                     colors               = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor   = Accent.copy(0.5f),
+                        focusedBorderColor   = Accent.copy(0.4f),
                         unfocusedBorderColor = Color.Transparent,
-                        focusedTextColor     = TextPrim, unfocusedTextColor = TextPrim, cursorColor = Accent
+                        focusedTextColor     = TextPrim, unfocusedTextColor = TextPrim, cursorColor = AccentAlt
                     ),
-                    textStyle = androidx.compose.ui.text.TextStyle(fontFamily = AppFont, fontSize = 14.sp, color = TextPrim),
-                    shape     = RoundedCornerShape(14.dp),
+                    textStyle    = TextStyle(fontFamily = AppFont, fontSize = 14.sp, color = TextPrim),
+                    shape        = RoundedCornerShape(14.dp),
                     trailingIcon = {
                         Text(
                             if (showKey) "Hide" else "Show",
-                            modifier   = Modifier.clickable { showKey = !showKey }.padding(8.dp),
-                            fontFamily = AppFont, fontWeight = FontWeight.Medium, fontSize = 13.sp, color = Accent
+                            modifier = Modifier.clickable { showKey = !showKey }.padding(8.dp),
+                            fontFamily = AppFont, fontWeight = FontWeight.Medium, fontSize = 13.sp, color = AccentAlt
                         )
                     }
                 )
             }
-
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Button(
                     onClick  = { prefs.edit().putString("gemini_api_key", key.trim()).apply(); saved = true },
@@ -1110,11 +1057,8 @@ fun ApiKeyCard(context: Context) {
                 ) {
                     Text("Save", fontFamily = AppFont, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                 }
-                if (saved) {
-                    Text("✓  Saved", fontFamily = AppFont, fontWeight = FontWeight.Medium, fontSize = 14.sp, color = Success)
-                }
+                if (saved) Text("✓  Saved", fontFamily = AppFont, fontWeight = FontWeight.Medium, fontSize = 14.sp, color = Success)
             }
-
             Text("Get your free key at console.groq.com", fontFamily = AppFont, fontSize = 12.sp, color = TextTert)
         }
     }
@@ -1132,14 +1076,18 @@ fun TemperatureCard(context: Context) {
         else               -> "Wild"
     }
     val tempColor = when {
-        temperature < 0.4f -> Color(0xFF4FC3F7)
+        temperature < 0.4f -> CatEdit
         temperature < 0.8f -> Accent
         temperature < 1.1f -> Warning
         else               -> Danger
     }
 
-    Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
-        .clip(RoundedCornerShape(20.dp)).background(Surface2).padding(20.dp)
+    Box(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(Surface2)
+            .border(1.dp, Brush.linearGradient(listOf(Color.White.copy(0.13f), tempColor.copy(0.08f))), RoundedCornerShape(20.dp))
+            .padding(20.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -1147,42 +1095,23 @@ fun TemperatureCard(context: Context) {
                 Text("AI Temperature", fontFamily = AppFont, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = TextPrim)
             }
             Text("Controls how creative or deterministic the AI output is.", fontFamily = AppFont, fontSize = 13.sp, color = TextSec)
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment     = Alignment.CenterVertically
-            ) {
-                Text(
-                    tempLabel,
-                    fontFamily = AppFont, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = tempColor
-                )
-                Box(
-                    modifier = Modifier.clip(RoundedCornerShape(50.dp)).background(tempColor.copy(0.15f))
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text(tempLabel, fontFamily = AppFont, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = tempColor)
+                Box(modifier = Modifier.clip(RoundedCornerShape(50.dp)).background(tempColor.copy(0.15f)).padding(horizontal = 10.dp, vertical = 4.dp)) {
                     Text("%.1f".format(temperature), fontFamily = AppFont, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = tempColor)
                 }
             }
-
             Slider(
-                value         = temperature,
-                onValueChange = { temperature = it },
-                onValueChangeFinished = {
-                    prefs.edit().putFloat("ai_temperature", temperature).apply()
-                },
-                valueRange    = 0f..1.5f,
-                steps         = 14,
-                colors        = SliderDefaults.colors(
-                    thumbColor            = tempColor,
-                    activeTrackColor      = tempColor,
-                    inactiveTrackColor    = Surface4
-                )
+                value                 = temperature,
+                onValueChange         = { temperature = it },
+                onValueChangeFinished = { prefs.edit().putFloat("ai_temperature", temperature).apply() },
+                valueRange            = 0f..1.5f,
+                steps                 = 14,
+                colors                = SliderDefaults.colors(thumbColor = tempColor, activeTrackColor = tempColor, inactiveTrackColor = Surface4)
             )
-
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("0.0 Precise", fontFamily = AppFont, fontSize = 11.sp, color = TextTert)
-                Text("1.5 Wild", fontFamily = AppFont, fontSize = 11.sp, color = TextTert)
+                Text("1.5 Wild",    fontFamily = AppFont, fontSize = 11.sp, color = TextTert)
             }
         }
     }
@@ -1190,20 +1119,22 @@ fun TemperatureCard(context: Context) {
 
 @Composable
 fun ModelInfoCard() {
-    Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
-        .clip(RoundedCornerShape(20.dp)).background(Surface2).padding(20.dp)
+    Box(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(Surface2)
+            .border(1.dp, Brush.linearGradient(listOf(Color.White.copy(0.13f), Color.White.copy(0.02f))), RoundedCornerShape(20.dp))
+            .padding(20.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             Box(
                 modifier = Modifier.size(44.dp).clip(RoundedCornerShape(12.dp))
-                    .background(Brush.linearGradient(listOf(Color(0xFF3D2BFF), Accent))),
+                    .background(Brush.linearGradient(listOf(Color(0xFF4C1D95), Accent))),
                 contentAlignment = Alignment.Center
-            ) {
-                Text("⚡", fontSize = 20.sp)
-            }
+            ) { Text("⚡", fontSize = 20.sp) }
             Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                Text("AI Model", fontFamily = AppFont, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = TextPrim)
-                Text("llama-3.3-70b-versatile", fontFamily = AppFont, fontSize = 13.sp, color = AccentAlt)
+                Text("AI Model",               fontFamily = AppFont, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = TextPrim)
+                Text("llama-3.3-70b-versatile",fontFamily = AppFont, fontSize = 13.sp, color = AccentAlt)
                 Text("via Groq — ~300ms response time", fontFamily = AppFont, fontSize = 12.sp, color = TextSec)
             }
         }
@@ -1212,20 +1143,24 @@ fun ModelInfoCard() {
 
 @Composable
 fun AboutCard() {
-    Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
-        .clip(RoundedCornerShape(20.dp)).background(Surface2).padding(20.dp)
+    Box(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(Surface2)
+            .border(1.dp, Brush.linearGradient(listOf(Color.White.copy(0.13f), Color.White.copy(0.02f))), RoundedCornerShape(20.dp))
+            .padding(20.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text("About", fontFamily = AppFont, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = TextPrim)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Version", fontFamily = AppFont, fontSize = 14.sp, color = TextSec)
-                Text("1.0", fontFamily = AppFont, fontSize = 14.sp, color = TextPrim)
+                Text("Version",  fontFamily = AppFont, fontSize = 14.sp, color = TextSec)
+                Text("1.3",      fontFamily = AppFont, fontSize = 14.sp, color = TextPrim)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Platform", fontFamily = AppFont, fontSize = 14.sp, color = TextSec)
-                Text("Android", fontFamily = AppFont, fontSize = 14.sp, color = TextPrim)
+                Text("Android",  fontFamily = AppFont, fontSize = 14.sp, color = TextPrim)
             }
-            HorizontalDivider(color = Surface3, thickness = 0.6.dp)
+            HorizontalDivider(color = Color.White.copy(0.06f), thickness = 0.6.dp)
             Text(
                 "TypeShift works in every app — no copy-paste, no switching. AI rewrites your text in place.",
                 fontFamily = AppFont, fontSize = 13.sp, color = TextSec, lineHeight = 20.sp
@@ -1234,9 +1169,7 @@ fun AboutCard() {
     }
 }
 
-// ─────────────────────────────────────────────
-//  Shared helpers
-// ─────────────────────────────────────────────
+// ─── Shared helpers ───────────────────────────────────────────────────────────
 @Composable
 fun SectionLabel(text: String) {
     Text(
@@ -1244,9 +1177,9 @@ fun SectionLabel(text: String) {
         modifier      = Modifier.padding(horizontal = 20.dp),
         fontFamily    = AppFont,
         fontWeight    = FontWeight.SemiBold,
-        fontSize      = 13.sp,
+        fontSize      = 12.sp,
         color         = TextSec,
-        letterSpacing = 0.5.sp
+        letterSpacing = 0.8.sp
     )
 }
 

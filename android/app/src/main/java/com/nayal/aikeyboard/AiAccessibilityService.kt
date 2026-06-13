@@ -48,7 +48,8 @@ class AiAccessibilityService : AccessibilityService() {
         "?subject"  to "Generate a short, compelling email subject line based on this text. Return only the subject line, nothing else.",
         "?eli5"     to "Explain this text like I'm 5 years old, using simple words and examples. Return only the explanation, nothing else.",
         "?tldr"     to "Summarize this text in one sentence. Return only the summary, nothing else.",
-        "?headline" to "Rewrite this as a short, catchy, attention-grabbing headline. Return only the headline, nothing else."
+        "?headline" to "Rewrite this as a short, catchy, attention-grabbing headline. Return only the headline, nothing else.",
+        "?joke"     to "Tell me a short, clever joke. Return only the joke itself, nothing else — no intro, no explanation."
     )
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
