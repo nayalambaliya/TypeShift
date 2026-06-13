@@ -107,7 +107,14 @@ final class TextMonitor: ObservableObject {
     // ── Menu bar command — re-focuses previous app, selects all, processes ──
     func processSelectedText(_ trigger: String) {
         guard !isProcessing else { return }
-        guard let instr = Self.triggers.first(where: { $0.0 == trigger })?.1 else { return }
+        let instr: String
+        if let found = Self.triggers.first(where: { $0.0 == trigger })?.1 {
+            instr = found
+        } else if let custom = loadCustomCommands().first(where: { $0.trigger == trigger }) {
+            instr = custom.prompt
+        } else {
+            return
+        }
 
         let target = lastActiveApp
         flash("⟳ Focusing…")
@@ -352,6 +359,16 @@ final class TextMonitor: ObservableObject {
                 guard !clean.isEmpty else { return }
                 // Pass original `text` so replaceLastChars removes trailing spaces too
                 process(fullText: text, clean: clean, instruction: instr, in: el)
+                return
+            }
+        }
+
+        // Custom user-defined commands
+        for cc in loadCustomCommands() {
+            if lower.hasSuffix(cc.trigger.lowercased()) {
+                let clean = String(trimmed.dropLast(cc.trigger.count)).trimmingCharacters(in: .whitespaces)
+                guard !clean.isEmpty else { return }
+                process(fullText: text, clean: clean, instruction: cc.prompt, in: el)
                 return
             }
         }

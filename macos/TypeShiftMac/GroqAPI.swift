@@ -29,7 +29,7 @@ func callGroq(text: String, instruction: String, apiKey: String) async throws ->
             ["role": "user",   "content": text]
         ],
         "max_tokens": 2048,
-        "temperature": 0.7
+        "temperature": UserDefaults.standard.object(forKey: "ai_temperature") as? Double ?? 0.7
     ]
     req.httpBody = try JSONSerialization.data(withJSONObject: body)
 

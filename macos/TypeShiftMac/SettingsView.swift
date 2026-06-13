@@ -25,6 +25,30 @@ extension Color {
     }
 }
 
+// ── Custom command model ───────────────────────────────────────
+struct CustomCommand: Codable, Identifiable {
+    var id:      String = UUID().uuidString
+    var trigger: String
+    var name:    String
+    var prompt:  String
+}
+
+func loadCustomCommands() -> [CustomCommand] {
+    guard let data = UserDefaults.standard.data(forKey: "custom_commands"),
+          let cmds = try? JSONDecoder().decode([CustomCommand].self, from: data)
+    else { return [] }
+    return cmds
+}
+
+func saveCustomCommands(_ commands: [CustomCommand]) {
+    guard let data = try? JSONEncoder().encode(commands) else { return }
+    UserDefaults.standard.set(data, forKey: "custom_commands")
+}
+
+private extension String {
+    var isBlank: Bool { trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+}
+
 // ── Settings root ─────────────────────────────────────────────
 struct SettingsView: View {
     @ObservedObject private var monitor = TextMonitor.shared
@@ -53,7 +77,11 @@ struct SettingsView: View {
                 Spacer().frame(height: 14)
                 ApiCard(apiKey: $apiKey, saved: $saved, showKey: $showKey)
                 Spacer().frame(height: 14)
+                TemperatureCard()
+                Spacer().frame(height: 14)
                 CommandsCard(expanded: $expanded)
+                Spacer().frame(height: 14)
+                CustomCommandsCard()
 
                 Spacer().frame(height: 40)
             }
@@ -261,5 +289,277 @@ struct CommandsCard: View {
         .padding(22)
         .background(cSurf1)
         .clipShape(RoundedRectangle(cornerRadius: 20))
+    }
+}
+
+// ── Temperature card ───────────────────────────────────────────
+struct TemperatureCard: View {
+    @AppStorage("ai_temperature") private var temperature: Double = 0.7
+
+    private var label: String {
+        switch temperature {
+        case ..<0.4: return "Precise"
+        case ..<0.8: return "Balanced"
+        case ..<1.1: return "Creative"
+        default:     return "Wild"
+        }
+    }
+
+    private var labelColor: Color {
+        switch temperature {
+        case ..<0.4: return Color(hex: "#4FC3F7")
+        case ..<0.8: return cAccent
+        case ..<1.1: return Color(hex: "#FF9F0A")
+        default:     return Color(hex: "#FF3B30")
+        }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                Text("🌡️  AI Temperature")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundStyle(cPrim)
+                Spacer()
+                Text(label)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(labelColor)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(labelColor.opacity(0.15))
+                    .clipShape(Capsule())
+            }
+
+            Text("Controls how creative or deterministic the AI output is.")
+                .font(.system(size: 13))
+                .foregroundStyle(cSec)
+
+            HStack(spacing: 10) {
+                Text("0.0")
+                    .font(.system(size: 11))
+                    .foregroundStyle(cTert)
+                Slider(value: $temperature, in: 0.0...1.5, step: 0.1)
+                    .tint(labelColor)
+                Text("1.5")
+                    .font(.system(size: 11))
+                    .foregroundStyle(cTert)
+                Text(String(format: "%.1f", temperature))
+                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+                    .foregroundStyle(labelColor)
+                    .frame(width: 28)
+            }
+
+            Text("Precise  ·  Balanced  ·  Creative  ·  Wild")
+                .font(.system(size: 11))
+                .foregroundStyle(cTert)
+        }
+        .padding(22)
+        .background(cSurf1)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+    }
+}
+
+// ── Custom commands card ───────────────────────────────────────
+struct CustomCommandsCard: View {
+    @State private var commands:   [CustomCommand] = loadCustomCommands()
+    @State private var showSheet   = false
+    @State private var editTarget: CustomCommand?  = nil
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                Text("My Commands")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundStyle(cPrim)
+                Spacer()
+                Button {
+                    editTarget = nil
+                    showSheet  = true
+                } label: {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.system(size: 18))
+                        .foregroundStyle(cAccent)
+                }
+                .buttonStyle(.plain)
+            }
+
+            Text("Create custom ?triggers with your own AI prompts. They work in any app, just like built-in commands.")
+                .font(.system(size: 13))
+                .foregroundStyle(cSec)
+
+            if commands.isEmpty {
+                HStack {
+                    Spacer()
+                    VStack(spacing: 8) {
+                        Text("✦").font(.system(size: 24))
+                        Text("No custom commands yet")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(cPrim)
+                        Text("Click + to create your first one")
+                            .font(.system(size: 13))
+                            .foregroundStyle(cSec)
+                    }
+                    .padding(.vertical, 16)
+                    Spacer()
+                }
+            } else {
+                ForEach(commands) { cmd in
+                    VStack(spacing: 0) {
+                        HStack(spacing: 12) {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(cmd.name)
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundStyle(cPrim)
+                                Text(cmd.trigger)
+                                    .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                                    .foregroundStyle(cAccLt)
+                                Text(cmd.prompt)
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(cSec)
+                                    .lineLimit(1)
+                            }
+                            Spacer()
+                            Button {
+                                editTarget = cmd
+                                showSheet  = true
+                            } label: {
+                                Image(systemName: "pencil")
+                                    .foregroundStyle(cAccent)
+                            }
+                            .buttonStyle(.plain)
+                            Button {
+                                commands.removeAll { $0.id == cmd.id }
+                                saveCustomCommands(commands)
+                            } label: {
+                                Image(systemName: "trash")
+                                    .foregroundStyle(Color(hex: "#FF3B30"))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .padding(.vertical, 10)
+
+                        if cmd.id != commands.last?.id {
+                            Divider().background(cSurf3)
+                        }
+                    }
+                }
+            }
+        }
+        .padding(22)
+        .background(cSurf1)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .sheet(isPresented: $showSheet) {
+            AddCommandSheet(existing: editTarget) { saved in
+                if editTarget != nil {
+                    commands = commands.map { $0.id == saved.id ? saved : $0 }
+                } else {
+                    commands.append(saved)
+                }
+                saveCustomCommands(commands)
+                showSheet  = false
+                editTarget = nil
+            }
+        }
+    }
+}
+
+// ── Add / edit command sheet ───────────────────────────────────
+struct AddCommandSheet: View {
+    let existing: CustomCommand?
+    let onSave:   (CustomCommand) -> Void
+
+    @State private var name:    String
+    @State private var trigger: String
+    @State private var prompt:  String
+    @State private var error:   String? = nil
+    @Environment(\.dismiss) private var dismiss
+
+    init(existing: CustomCommand?, onSave: @escaping (CustomCommand) -> Void) {
+        self.existing = existing
+        self.onSave   = onSave
+        _name    = State(initialValue: existing?.name    ?? "")
+        _trigger = State(initialValue: existing?.trigger ?? "?")
+        _prompt  = State(initialValue: existing?.prompt  ?? "")
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            Text(existing != nil ? "Edit Command" : "New Command")
+                .font(.system(size: 22, weight: .bold))
+                .foregroundStyle(cPrim)
+
+            MacSheetField(label: "Name",    value: $name,    placeholder: "e.g. Formal Email")
+            MacSheetField(label: "Trigger", value: $trigger, placeholder: "e.g. ?email")
+            MacSheetField(label: "Prompt",  value: $prompt,  placeholder: "e.g. Rewrite as a professional email…", multiline: true)
+
+            if let error {
+                Text(error)
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color(hex: "#FF3B30"))
+            }
+
+            HStack {
+                Button("Cancel") { dismiss() }
+                    .font(.system(size: 14))
+                    .foregroundStyle(cSec)
+                    .buttonStyle(.plain)
+                Spacer()
+                Button("Save Command") {
+                    guard !name.isBlank    else { error = "Name is required"; return }
+                    guard trigger.count > 1 && trigger.hasPrefix("?") else { error = "Trigger must start with ? plus a keyword"; return }
+                    guard !prompt.isBlank  else { error = "Prompt is required"; return }
+                    let cmd = CustomCommand(
+                        id:      existing?.id ?? UUID().uuidString,
+                        trigger: trigger.trimmingCharacters(in: .whitespaces).lowercased(),
+                        name:    name.trimmingCharacters(in: .whitespaces),
+                        prompt:  prompt.trimmingCharacters(in: .whitespaces)
+                    )
+                    onSave(cmd)
+                }
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 20)
+                .frame(height: 40)
+                .background(cAccent)
+                .clipShape(Capsule())
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(28)
+        .background(cBg)
+        .frame(minWidth: 440, maxWidth: 440)
+    }
+}
+
+struct MacSheetField: View {
+    let label:       String
+    @Binding var value: String
+    let placeholder: String
+    var multiline:   Bool = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(label)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(cSec)
+            Group {
+                if multiline {
+                    TextEditor(text: $value)
+                        .frame(minHeight: 80, maxHeight: 120)
+                        .font(.system(size: 13))
+                        .foregroundStyle(cPrim)
+                        .scrollContentBackground(.hidden)
+                } else {
+                    TextField(placeholder, text: $value)
+                        .font(.system(size: 13))
+                        .foregroundStyle(cPrim)
+                        .textFieldStyle(.plain)
+                }
+            }
+            .padding(10)
+            .background(cSurf2)
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .tint(cAccent)
+        }
     }
 }

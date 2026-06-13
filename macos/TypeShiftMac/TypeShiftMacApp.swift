@@ -59,16 +59,37 @@ struct MenuBarContent: View {
             .font(.system(size: 10, weight: .semibold))
             .foregroundStyle(.secondary)
 
-        Button("Fix Grammar")  { monitor.processSelectedText("?fix") }
-        Button("Improve")      { monitor.processSelectedText("?improve") }
-        Button("Make Formal")  { monitor.processSelectedText("?formal") }
-        Button("Make Casual")  { monitor.processSelectedText("?casual") }
-        Button("Shorten")      { monitor.processSelectedText("?shorter") }
-        Button("Expand")       { monitor.processSelectedText("?longer") }
-        Button("Write Reply")  { monitor.processSelectedText("?reply") }
-        Button("Add Emojis")   { monitor.processSelectedText("?emoji") }
-        Button("Summarize")    { monitor.processSelectedText("?tldr") }
-        Button("Make Human")   { monitor.processSelectedText("?human") }
+        Button("Fix Grammar")    { monitor.processSelectedText("?fix") }
+        Button("Improve")        { monitor.processSelectedText("?improve") }
+        Button("Make Formal")    { monitor.processSelectedText("?formal") }
+        Button("Make Casual")    { monitor.processSelectedText("?casual") }
+        Button("Shorten")        { monitor.processSelectedText("?shorter") }
+        Button("Expand")         { monitor.processSelectedText("?longer") }
+        Button("Write Reply")    { monitor.processSelectedText("?reply") }
+        Button("Add Emojis")     { monitor.processSelectedText("?emoji") }
+        Button("Make Human")     { monitor.processSelectedText("?human") }
+        Button("Hinglish")       { monitor.processSelectedText("?hinglish") }
+
+        Divider()
+
+        Button("Write Tweet")    { monitor.processSelectedText("?tweet") }
+        Button("Bullet Points")  { monitor.processSelectedText("?bullet") }
+        Button("Email Subject")  { monitor.processSelectedText("?subject") }
+        Button("Headline")       { monitor.processSelectedText("?headline") }
+        Button("Summarize")      { monitor.processSelectedText("?tldr") }
+        Button("Explain (ELI5)") { monitor.processSelectedText("?eli5") }
+        Button("Roast It")       { monitor.processSelectedText("?roast") }
+
+        let customCmds = loadCustomCommands()
+        if !customCmds.isEmpty {
+            Divider()
+            Text("MY COMMANDS")
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundStyle(.secondary)
+            ForEach(customCmds) { cc in
+                Button(cc.name) { monitor.processSelectedText(cc.trigger) }
+            }
+        }
 
         Divider()
 
