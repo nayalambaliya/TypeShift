@@ -1,0 +1,110 @@
+<Window x:Class="TypeShift.CommandDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Custom Command" Width="440" SizeToContent="Height"
+        Background="#0D0D0D" Foreground="White"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        FontFamily="Segoe UI Variable Display">
+
+    <Window.Resources>
+        <Style x:Key="DarkTextBox" TargetType="TextBox">
+            <Setter Property="Background"       Value="#242424"/>
+            <Setter Property="Foreground"       Value="White"/>
+            <Setter Property="BorderBrush"      Value="#7B61FF"/>
+            <Setter Property="BorderThickness"  Value="1"/>
+            <Setter Property="Padding"          Value="12,8"/>
+            <Setter Property="FontFamily"       Value="Segoe UI Variable Text"/>
+            <Setter Property="FontSize"         Value="13"/>
+            <Setter Property="CaretBrush"       Value="#7B61FF"/>
+            <Setter Property="SelectionBrush"   Value="#7B61FF"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10"
+                                Padding="{TemplateBinding Padding}">
+                            <ScrollViewer x:Name="PART_ContentHost"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="AccentButton" TargetType="Button">
+            <Setter Property="Background"   Value="#7B61FF"/>
+            <Setter Property="Foreground"   Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Height"       Value="38"/>
+            <Setter Property="FontWeight"   Value="SemiBold"/>
+            <Setter Property="FontSize"     Value="13"/>
+            <Setter Property="Cursor"       Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="20" Padding="20,0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#9E8FFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="GhostButton" TargetType="Button" BasedOn="{StaticResource AccentButton}">
+            <Setter Property="Background" Value="#242424"/>
+            <Setter Property="Foreground" Value="#8A8A8A"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#2E2E2E"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <StackPanel Margin="28">
+        <!-- Title -->
+        <TextBlock x:Name="TitleLabel" Text="New Command"
+                   FontSize="20" FontWeight="ExtraBold" Foreground="White" Margin="0,0,0,22"/>
+
+        <!-- Name -->
+        <TextBlock Text="Name" FontSize="12" FontWeight="SemiBold" Foreground="#8A8A8A" Margin="0,0,0,6"/>
+        <TextBox x:Name="NameBox" Style="{StaticResource DarkTextBox}"
+                 PlaceholderText="e.g. Bullet Points" Margin="0,0,0,16"/>
+
+        <!-- Trigger -->
+        <TextBlock Text="Trigger" FontSize="12" FontWeight="SemiBold" Foreground="#8A8A8A" Margin="0,0,0,6"/>
+        <TextBox x:Name="TriggerBox" Style="{StaticResource DarkTextBox}"
+                 PlaceholderText="e.g. ?mybullet" FontFamily="Consolas" Margin="0,0,0,4"/>
+        <TextBlock Text="Must start with ? — press Space after typing it to activate"
+                   FontSize="11" Foreground="#444444" Margin="0,0,0,16"/>
+
+        <!-- Prompt -->
+        <TextBlock Text="AI Prompt" FontSize="12" FontWeight="SemiBold" Foreground="#8A8A8A" Margin="0,0,0,6"/>
+        <TextBox x:Name="PromptBox" Style="{StaticResource DarkTextBox}"
+                 PlaceholderText="e.g. Convert the following text into bullet points. Return only the result."
+                 TextWrapping="Wrap" AcceptsReturn="True" Height="90"
+                 VerticalScrollBarVisibility="Auto" Margin="0,0,0,6"/>
+        <TextBlock Text="Tip: end with &quot;Return only the result, nothing else.&quot;"
+                   FontSize="11" Foreground="#444444" Margin="0,0,0,24"/>
+
+        <!-- Error label -->
+        <TextBlock x:Name="ErrorLabel" Foreground="#FF3B30" FontSize="12"
+                   Visibility="Collapsed" Margin="0,0,0,12"/>
+
+        <!-- Buttons -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Cancel" Style="{StaticResource GhostButton}"
+                    Width="80" Margin="0,0,10,0" Click="Cancel_Click"/>
+            <Button Content="Save" Style="{StaticResource AccentButton}"
+                    Width="80" Click="Save_Click"/>
+        </StackPanel>
+    </StackPanel>
+</Window>
