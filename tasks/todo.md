@@ -31,7 +31,10 @@
 - [ ] **Port `?simplify` to macOS** — add to `TextMonitor.triggers` array + `SettingsView.swift` built-in list
 - [ ] **Port `?joke` to macOS** — same as above
 - [ ] **Port `?simplify` and `?joke` to Windows** — add to `MainWindow.xaml.cs` `BuiltinCommands` array + `TextProcessor.cs` triggers dict
-- [ ] **Restore signed Android release APK** — reactivate `assembleRelease` in `release-android.yml`, use `KEYSTORE_BASE64` secret
+- [x] **Restore signed Android release APK** — reactivated `assembleRelease` in `release-android.yml` with `KEYSTORE_BASE64` decode
+- [x] **Fix missing launcher icons** — adaptive icon (gradient bg + T› foreground + monochrome) in `mipmap-anydpi-v26`; manifest references now resolve
+- [x] **Add splash screen** — `core-splashscreen` + `Theme.AIKeyboard.Starting` + `installSplashScreen()`
+- [x] **Fix versionCode/versionName** — now driven by CI from tag (`VERSION_NAME`) + run number (`VERSION_CODE`)
 - [ ] **macOS CI workflow** — add `.github/workflows/release-macos.yml`: `xcodegen generate` + `xcodebuild archive` + zip + upload to release
 
 ---

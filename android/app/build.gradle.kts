@@ -15,8 +15,10 @@ android {
         applicationId = "com.nayal.aikeyboard"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        // Version is driven by CI from the release tag; falls back to a sane default for local builds.
+        // VERSION_CODE = monotonic build number (github.run_number); VERSION_NAME = tag without leading "v".
+        versionCode = (System.getenv("VERSION_CODE") ?: "4").toInt()
+        versionName = (System.getenv("VERSION_NAME") ?: "1.3").removePrefix("v")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -59,6 +61,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-text-google-fonts")
     implementation("androidx.lifecycle:lifecycle-runtime-compose")
     implementation("androidx.compose.material:material-icons-extended")
+    implementation("androidx.core:core-splashscreen:1.0.1")
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

@@ -10,6 +10,9 @@ android/Task
 android/:app:installDebug
 *.apk
 *.aab
+# Never commit signing keystores
+*.jks
+*.keystore
 
 # ── macOS (Xcode) ─────────────────────────────────────────────
 macos/build/

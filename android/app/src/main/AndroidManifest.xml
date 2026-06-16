@@ -18,7 +18,7 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="AI Text Assistant"
-            android:theme="@style/Theme.AIKeyboard">
+            android:theme="@style/Theme.AIKeyboard.Starting">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

@@ -3,6 +3,51 @@
 
 ---
 
+## 2026-06-13 · Claude Opus 4.8 · Critical fixes — icons, signed release, versioning
+
+**Mode:** Builder
+
+**Did:**
+- **Root-caused the missing launcher icons:** manifest referenced `@mipmap/ic_launcher` but no mipmap resources existed (cleanup commit `c3bbcd7` removed `.webp` + adaptive XMLs; `.png` were already gone). Build was broken.
+- Created adaptive icon set (minSdk 26 → vector-only, no PNG buckets):
+  - `drawable/ic_launcher_background.xml` — #3D2BFF→#7B61FF diagonal gradient
+  - `drawable/ic_launcher_foreground.xml` — white "T›" stroke wordmark, inside safe zone
+  - `drawable/ic_launcher_monochrome.xml` — Android 13 themed-icon layer
+  - `mipmap-anydpi-v26/ic_launcher.xml` + `ic_launcher_round.xml`
+- Added splash: `core-splashscreen:1.0.1`, `Theme.AIKeyboard.Starting`, `installSplashScreen()` in MainActivity, manifest activity theme switched to `.Starting`
+- **Fixed Play Protect root cause:** `release-android.yml` now decodes `KEYSTORE_BASE64` and runs `assembleRelease` (was debug-signed)
+- **Fixed versioning:** `build.gradle.kts` reads `VERSION_NAME` (from tag, `v` stripped) + `VERSION_CODE` (from `github.run_number`); CI injects both
+- Added `*.jks` / `*.keystore` to `.gitignore`
+- Verified with `./gradlew assembleDebug` → BUILD SUCCESSFUL
+
+**State:**
+- Android: ✅ Builds clean. Icons render. Next signed release will be a proper release-signed APK with correct version.
+
+**Decided:**
+- Vector-only adaptive icons (no density PNGs) — justified by minSdk 26
+- Version driven by CI, not hardcoded — prevents the "every release is v1.0" bug recurring
+
+**Next (from the audit, not yet done):**
+- HIGH: fix AI prompt structure (system prompt + JSONObject body) — the "Improve returns unrelated text" bug
+- HIGH: enable R8 + proguard rules
+- HIGH: EncryptedSharedPreferences for API key
+- Note: template audit Parts 2 (camera/mic/location perms), Scoped Storage, FileProvider, Room/SQL are N/A — app only declares INTERNET
+
+**Modified:**
+- `android/app/src/main/res/drawable/ic_launcher_background.xml` (new)
+- `android/app/src/main/res/drawable/ic_launcher_foreground.xml` (new)
+- `android/app/src/main/res/drawable/ic_launcher_monochrome.xml` (new)
+- `android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml` (new)
+- `android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml` (new)
+- `android/app/src/main/res/values/themes.xml`
+- `android/app/src/main/AndroidManifest.xml`
+- `android/app/src/main/java/com/nayal/aikeyboard/MainActivity.kt`
+- `android/app/build.gradle.kts`
+- `.github/workflows/release-android.yml`
+- `.gitignore`
+
+---
+
 ## 2026-06-13 · Claude Sonnet 4.6 · Handover — full project onboarding + repo cleanup
 
 **Mode:** Researcher + Builder
