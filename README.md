@@ -25,9 +25,18 @@ TypeShift is a cross-platform AI writing assistant that hooks directly into the 
 
 - **Android** — Accessibility Service runs in the background, detects triggers as you type
 - **macOS** — Menu bar app using the macOS Accessibility API (AXUIElement), works in Notes, Mail, VS Code, browsers, and more
-- **Windows** — System tray app using UI Automation + global hotkeys, works in every Windows app
+- **Windows** — System tray app using a global keyboard hook + clipboard automation, works in every Windows app
 
 All platforms use the [Groq API](https://console.groq.com) (free tier) with `llama-3.3-70b-versatile` for near-instant responses.
+
+### Key features
+
+- ⚡ **19+ built-in commands** — fix grammar, change tone, summarize, translate, and more
+- 🛠️ **Custom commands** — users define their own triggers and AI prompts, stored locally
+- 🎚️ **Adjustable AI temperature** — slide from precise to creative
+- 🔁 **In-place rewriting** — text is replaced directly where you typed it, no copy-paste
+- 🌐 **Works everywhere** — browsers, editors, chat apps, email — any text field
+- 🌙 **Native dark UI** on every platform
 
 ---
 
@@ -37,7 +46,7 @@ All platforms use the [Groq API](https://console.groq.com) (free tier) with `lla
 |----------|-----------|----------|--------|
 | Android 8+ | `AccessibilityService` | [TypeShift-android.apk](https://github.com/nayalambaliya/TypeShift/releases/latest) | ✅ Live |
 | macOS 13+ | `AXUIElement` + `NSMenuBarExtra` | [TypeShift-macOS.zip](https://github.com/nayalambaliya/TypeShift/releases/latest) | ✅ Live |
-| Windows 10+ | UI Automation + Global Hotkeys | Coming soon | 🔧 In Progress |
+| Windows 10+ | Global keyboard hook + clipboard | [TypeShift-windows.exe](https://github.com/nayalambaliya/TypeShift/releases/latest) | ✅ Live |
 
 ---
 
@@ -123,6 +132,29 @@ User types "Hello world?fix " in any app
 
 ---
 
+## Engineering Highlights
+
+> The interesting part of TypeShift isn't the AI call — it's getting **one product to work natively across three operating systems**, each with a completely different model for reading and writing text in *other* apps.
+
+- **Three native codebases, one product** — Kotlin/Compose (Android), Swift/SwiftUI (macOS), C#/WPF (Windows) — sharing the same command system, design language, and Groq integration.
+- **Automated CI/CD** — GitHub Actions builds and publishes **signed Android APKs** and **self-contained Windows executables** to GitHub Releases on every version tag, with the app version injected from the tag.
+- **Release code signing** — Android release builds are signed with a keystore stored as encrypted CI secrets, never committed to the repo.
+- **Robust text capture** — on macOS, text is read using a three-strategy fallback chain (direct accessibility value → parameterized range query → clipboard) so it works in native apps *and* Electron/browser apps that expose different accessibility APIs.
+- **Resilient replacement** — every platform restores the user's original text and clipboard if the AI call fails, so the user never loses what they typed.
+
+---
+
+## Engineering Challenges & What I Learned
+
+Building this taught me as much about **platform constraints and distribution** as about code:
+
+- **Android's accessibility security model** — TypeShift relies on `AccessibilityService`, the most powerful (and most-abused) permission on Android. I learned why Google's Play Protect hard-blocks sideloaded apps that use it (it's a primary vector for banking-trojan malware), and worked through the real distribution tradeoffs: Play Store review with an accessibility declaration vs. re-architecting as a keyboard (IME) to avoid the policy entirely.
+- **APK signing & versioning** — debugged a CI signing failure down to a keystore password mismatch, and moved version metadata out of hardcoded values into the release pipeline.
+- **Cross-platform accessibility APIs** — each OS exposes text differently; what works in macOS Notes fails in VS Code, which is why the macOS reader has multiple fallbacks.
+- **Timing & focus bugs** — browsers update the clipboard slower than native apps, so the macOS/Windows clipboard flows needed carefully tuned delays to stay reliable.
+
+---
+
 ## Download
 
 ### macOS
@@ -137,7 +169,14 @@ User types "Hello world?fix " in any app
 1. Download `TypeShift-android.apk` from [Releases](https://github.com/nayalambaliya/TypeShift/releases/latest)
 2. On your Android phone: **Settings → Apps → Install unknown apps** → allow your browser or Files app
 3. Open the downloaded APK and tap Install
-4. Open TypeShift → enter your free [Groq API key](https://console.groq.com) → enable the Accessibility Service → enable the keyboard
+4. Open TypeShift → enter your free [Groq API key](https://console.groq.com) → enable the Accessibility Service
+
+> **Note:** Because TypeShift uses Android's Accessibility API (the same powerful permission used by screen readers), Google Play Protect may warn before install. This is expected for any accessibility app distributed outside the Play Store — tap through the prompt to install.
+
+### Windows
+1. Download `TypeShift-windows.exe` from [Releases](https://github.com/nayalambaliya/TypeShift/releases/latest)
+2. Run it — no installation required, no .NET needed (self-contained)
+3. TypeShift appears in your system tray → open Settings → enter your free [Groq API key](https://console.groq.com)
 
 ---
 
