@@ -135,7 +135,7 @@
 
                         <!-- Quick commands -->
                         <TextBlock Text="QUICK COMMANDS" FontSize="11" FontWeight="SemiBold"
-                                   Foreground="#8A8A8A" LetterSpacing="0.5" Margin="0,0,0,10"/>
+                                   Foreground="#8A8A8A" Margin="0,0,0,10"/>
                         <ItemsControl x:Name="QuickCommandsList">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -146,7 +146,7 @@
 
                         <!-- Tip card -->
                         <TextBlock Text="PRO TIP" FontSize="11" FontWeight="SemiBold"
-                                   Foreground="#8A8A8A" LetterSpacing="0.5" Margin="0,20,0,10"/>
+                                   Foreground="#8A8A8A" Margin="0,20,0,10"/>
                         <Border CornerRadius="16" Padding="18" BorderThickness="1" BorderBrush="#1A1040">
                             <Border.Background>
                                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
@@ -184,13 +184,13 @@
                             </DockPanel>
 
                             <!-- Built-in -->
-                            <TextBlock Text="BUILT-IN" FontSize="11" FontWeight="SemiBold" Foreground="#8A8A8A" LetterSpacing="0.5" Margin="0,0,0,8"/>
+                            <TextBlock Text="BUILT-IN" FontSize="11" FontWeight="SemiBold" Foreground="#8A8A8A" Margin="0,0,0,8"/>
                             <Border CornerRadius="16" Background="#1A1A1A" x:Name="BuiltinList" Margin="0,0,0,20">
                                 <ItemsControl x:Name="BuiltinCommandsList" Margin="4"/>
                             </Border>
 
                             <!-- My Commands -->
-                            <TextBlock Text="MY COMMANDS" FontSize="11" FontWeight="SemiBold" Foreground="#8A8A8A" LetterSpacing="0.5" Margin="0,0,0,8"/>
+                            <TextBlock Text="MY COMMANDS" FontSize="11" FontWeight="SemiBold" Foreground="#8A8A8A" Margin="0,0,0,8"/>
                             <Border CornerRadius="16" Background="#1A1A1A" x:Name="CustomListContainer">
                                 <ItemsControl x:Name="CustomCommandsList" Margin="4"/>
                             </Border>
@@ -249,7 +249,7 @@
                             </StackPanel>
                         </Border>
 
-                        <TextBlock Text="USE CASES" FontSize="11" FontWeight="SemiBold" Foreground="#8A8A8A" LetterSpacing="0.5" Margin="0,0,0,10"/>
+                        <TextBlock Text="USE CASES" FontSize="11" FontWeight="SemiBold" Foreground="#8A8A8A" Margin="0,0,0,10"/>
 
                         <!-- Use case cards -->
                         <ItemsControl x:Name="UseCasesList"/>
