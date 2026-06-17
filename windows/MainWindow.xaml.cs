@@ -3,6 +3,14 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using TypeShift.Core;
 using TypeShift.Models;
+// WinForms is enabled (tray icon) so these type names exist in two namespaces — pin to WPF.
+using Color = System.Windows.Media.Color;
+using FontFamily = System.Windows.Media.FontFamily;
+using Brushes = System.Windows.Media.Brushes;
+using Orientation = System.Windows.Controls.Orientation;
+using Button = System.Windows.Controls.Button;
+using HorizontalAlignment = System.Windows.HorizontalAlignment;
+using VerticalAlignment = System.Windows.VerticalAlignment;
 
 namespace TypeShift;
 

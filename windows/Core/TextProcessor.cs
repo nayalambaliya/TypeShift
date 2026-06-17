@@ -3,6 +3,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
 using TypeShift.Models;
+// WinForms is enabled for the tray icon, so its `Application` clashes with WPF's. Pin to WPF.
+using Application = System.Windows.Application;
 
 namespace TypeShift.Core;
 
@@ -181,8 +183,8 @@ public sealed class TextProcessor : IDisposable
 
             StatusChanged?.Invoke("Thinking…");
 
-            var apiKey     = Settings.Default.ApiKey ?? "";
-            var temperature = Settings.Default.Temperature;
+            var apiKey     = Settings.ApiKey;
+            var temperature = Settings.Temperature;
 
             if (string.IsNullOrWhiteSpace(apiKey))
             { StatusChanged?.Invoke("Set your API key in Settings"); return; }
