@@ -1,0 +1,133 @@
+name: Release (all platforms)
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release tag (e.g. v1.5)'
+        required: true
+        default: 'v1.5'
+
+permissions:
+  contents: write
+
+jobs:
+  # ── Android ────────────────────────────────────────────────
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Decode keystore
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/release.jks
+      - name: Build signed release APK
+        working-directory: android
+        env:
+          KEYSTORE_FILE: release.jks
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          VERSION_NAME: ${{ github.event.inputs.tag_name || github.ref_name }}
+          VERSION_CODE: ${{ github.run_number }}
+        run: ./gradlew assembleRelease
+      - name: Rename APK
+        run: mv android/app/build/outputs/apk/release/app-release.apk TypeShift-android.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android
+          path: TypeShift-android.apk
+
+  # ── macOS ──────────────────────────────────────────────────
+  build-macos:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install xcodegen
+        run: brew install xcodegen
+      - name: Generate Xcode project
+        working-directory: macos
+        run: xcodegen generate
+      - name: Build
+        working-directory: macos
+        run: |
+          xcodebuild \
+            -scheme TypeShiftMac \
+            -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=YES \
+            CODE_SIGNING_ALLOWED=YES
+      - name: Package as ZIP
+        run: |
+          cd macos/build/Build/Products/Release
+          ditto -c -k --sequesterRsrc --keepParent TypeShift.app TypeShift-macOS.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: macos/build/Build/Products/Release/TypeShift-macOS.zip
+
+  # ── Windows ────────────────────────────────────────────────
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Publish self-contained EXE
+        run: >
+          dotnet publish windows/TypeShift.csproj
+          -c Release
+          -r win-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -o publish/windows
+      - name: Rename EXE
+        run: mv publish/windows/TypeShift.exe TypeShift-windows.exe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: TypeShift-windows.exe
+
+  # ── Single release: publish everything at once (no race) ───
+  release:
+    needs: [build-android, build-macos, build-windows]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag_name || github.ref_name }}
+          files: dist/*
+          body: |
+            ## TypeShift — AI text assistant for Android, macOS & Windows
+
+            ### Android
+            1. Download **TypeShift-android.apk**
+            2. Settings → Apps → Install unknown apps → allow your browser/Files app, then open the APK and Install
+            3. Open TypeShift → pick your AI provider and add an API key (or use a local model) → enable the Accessibility Service
+
+            ### macOS
+            1. Download **TypeShift-macOS.zip**, unzip, move `TypeShift.app` to Applications
+            2. Right-click → Open (first launch only)
+            3. Menu bar → Settings → add your API key, then enable TypeShift in System Settings → Privacy → Accessibility
+
+            ### Windows
+            1. Download **TypeShift-windows.exe** and run it (no install, no .NET needed)
+            2. It lives in the system tray → Settings → add your API key
+            3. Type any text, add a command like `?fix`, press Space
