@@ -3,6 +3,41 @@
 
 ---
 
+## 2026-06-17 · Claude Opus 4.8 · AI prompt fix + multi-provider support (Android)
+
+**Mode:** Builder
+
+**Did:**
+- **Fixed the "Improve returns unrelated text" bug** in `AiAccessibilityService.callAI`: instruction now sent as a `system` message (was folded into the user turn), and the request body is built with `JSONObject`/`JSONArray` (was hand-built string with manual escaping that corrupted on quotes/tabs/newlines/unicode). Improves every command, not just `?improve`.
+- **Added multi-provider support** (the CV's "configurable AI provider support with custom API keys and local models" claim, now real):
+  - New `Providers.kt`: `AiProvider` model + presets (Groq, OpenAI, OpenRouter, Together, DeepSeek, Mistral, Local Ollama/LM Studio, Custom) + SharedPreferences helpers. Key insight — all are OpenAI-compatible `/chat/completions`, so one network path serves all.
+  - `callAI` now resolves endpoint/model/key from the selected provider; Authorization header only sent when a key exists (local needs none).
+  - Settings UI: replaced `ApiKeyCard` with `ProviderCard` (provider chips + per-provider key/model, plus Server URL for local/custom). `ModelInfoCard` + Home `StatsRow` reflect the selected provider.
+  - Groq key keeps legacy pref name `gemini_api_key` (L-001) so existing users keep their key.
+  - Manifest: `usesCleartextTraffic="true"` so local HTTP LLM servers on LAN work.
+- Verified with `./gradlew assembleDebug` → BUILD SUCCESSFUL.
+
+**State:**
+- Android: ✅ Builds. AI quality fix + full multi-provider live in code (not yet released/tagged).
+- macOS/Windows: still Groq-only — multi-provider not yet ported.
+
+**Decided:**
+- OpenAI-compatible-only provider set for v1 (covers Groq/OpenAI/OpenRouter/Together/DeepSeek/Mistral/local). Anthropic + Gemini use different schemas — deferred (would need per-provider adapters).
+- Model field editable for every provider, not just custom.
+
+**Next:**
+- Port multi-provider to macOS + Windows for parity
+- Optional: tag a release to ship the signed APK with these changes
+- Still open from audit: R8/minification, EncryptedSharedPreferences
+
+**Modified:**
+- `android/app/src/main/java/com/nayal/aikeyboard/Providers.kt` (new)
+- `android/app/src/main/java/com/nayal/aikeyboard/AiAccessibilityService.kt`
+- `android/app/src/main/java/com/nayal/aikeyboard/MainActivity.kt`
+- `android/app/src/main/AndroidManifest.xml`
+
+---
+
 ## 2026-06-13 · Claude Opus 4.8 · Critical fixes — icons, signed release, versioning
 
 **Mode:** Builder

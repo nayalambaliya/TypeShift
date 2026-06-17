@@ -11,6 +11,7 @@ import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.Toast
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
@@ -118,11 +119,11 @@ class AiAccessibilityService : AccessibilityService() {
     }
 
     private fun processText(source: AccessibilityNodeInfo, text: String, instruction: String) {
-        val prefs = getSharedPreferences("ai_keyboard_prefs", Context.MODE_PRIVATE)
-        val apiKey = prefs.getString("gemini_api_key", "") ?: ""
+        val provider = selectedProvider(this)
+        val apiKey   = apiKeyFor(this, provider)
 
-        if (apiKey.isEmpty()) {
-            Toast.makeText(this, "Open AI Text Assistant app and save your Gemini API key", Toast.LENGTH_LONG).show()
+        if (provider.needsKey && apiKey.isEmpty()) {
+            Toast.makeText(this, "Open TypeShift and add your ${provider.name} API key", Toast.LENGTH_LONG).show()
             isProcessing.set(false)
             source.recycle()
             return
@@ -134,7 +135,7 @@ class AiAccessibilityService : AccessibilityService() {
         executor.execute {
             try {
                 Log.d("AIService", "Calling AI for: $text")
-                val result = callAI(text, instruction, apiKey)
+                val result = callAI(text, instruction)
                 Log.d("AIService", "Got result: $result")
                 mainHandler.post {
                     stopSpinner()
@@ -215,21 +216,41 @@ class AiAccessibilityService : AccessibilityService() {
         return source.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, bundle)
     }
 
-    private fun callAI(text: String, instruction: String, apiKey: String): String {
-        val url = URL("https://api.groq.com/openai/v1/chat/completions")
+    private fun callAI(text: String, instruction: String): String {
+        // Resolve the user's chosen provider — endpoint, model and key all come from settings.
+        // Every supported provider (Groq, OpenAI, OpenRouter, Together, DeepSeek, Mistral,
+        // local Ollama/LM Studio, or a custom OpenAI-compatible server) speaks the same schema.
+        val provider = selectedProvider(this)
+        val endpoint = endpointFor(this, provider)
+        val model    = modelFor(this, provider)
+        val apiKey   = apiKeyFor(this, provider)
+
+        val url = URL(endpoint)
         val conn = url.openConnection() as HttpURLConnection
         conn.requestMethod = "POST"
         conn.setRequestProperty("Content-Type", "application/json")
-        conn.setRequestProperty("Authorization", "Bearer $apiKey")
+        // Only send Authorization when a key exists — local servers usually need none.
+        if (apiKey.isNotEmpty()) conn.setRequestProperty("Authorization", "Bearer $apiKey")
         conn.doOutput = true
         conn.connectTimeout = 15000
         conn.readTimeout = 30000
 
         val prefs2 = getSharedPreferences("ai_keyboard_prefs", Context.MODE_PRIVATE)
         val temperature = prefs2.getFloat("ai_temperature", 0.7f)
-        val safeText = text.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n")
-        val safeInstruction = instruction.replace("\"", "\\\"")
-        val body = """{"model":"llama-3.3-70b-versatile","temperature":$temperature,"messages":[{"role":"user","content":"$safeInstruction\n\nText:\n$safeText"}]}"""
+
+        // Build the request with JSONObject so any quotes, tabs, newlines or unicode in the
+        // user's text are escaped correctly (manual string-building broke on these and caused
+        // garbled / unrelated responses). The instruction goes in a `system` message and the
+        // user's text in a `user` message — this keeps the model on-task far more reliably.
+        val messages = JSONArray().apply {
+            put(JSONObject().put("role", "system").put("content", instruction))
+            put(JSONObject().put("role", "user").put("content", text))
+        }
+        val body = JSONObject().apply {
+            put("model", model)
+            put("temperature", temperature.toDouble())
+            put("messages", messages)
+        }.toString()
 
         OutputStreamWriter(conn.outputStream).use { it.write(body) }
 

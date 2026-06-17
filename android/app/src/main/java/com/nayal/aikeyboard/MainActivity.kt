@@ -453,7 +453,7 @@ fun HomeHeader(serviceOn: Boolean, onEnable: () -> Unit) {
 @Composable
 fun StatsRow(context: Context) {
     val prefs       = context.getSharedPreferences("ai_keyboard_prefs", Context.MODE_PRIVATE)
-    val hasKey      = (prefs.getString("gemini_api_key", "") ?: "").isNotEmpty()
+    val hasKey      = selectedProvider(context).let { !it.needsKey || apiKeyFor(context, it).isNotEmpty() }
     val customCount = loadCustomCommands(context).size
 
     Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -986,6 +986,7 @@ fun ExploreCard(emoji: String, title: String, desc: String) {
 @Composable
 fun SettingsTab() {
     val context = LocalContext.current
+    var providerId by remember { mutableStateOf(selectedProviderId(context)) }
 
     LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 40.dp)) {
         item {
@@ -996,19 +997,26 @@ fun SettingsTab() {
             }
             Spacer(Modifier.height(24.dp))
         }
-        item { ApiKeyCard(context);      Spacer(Modifier.height(16.dp)) }
-        item { TemperatureCard(context); Spacer(Modifier.height(16.dp)) }
-        item { ModelInfoCard();          Spacer(Modifier.height(16.dp)) }
+        item {
+            ProviderCard(context, providerId) { providerId = it }
+            Spacer(Modifier.height(16.dp))
+        }
+        item { TemperatureCard(context);          Spacer(Modifier.height(16.dp)) }
+        item { ModelInfoCard(context, providerId); Spacer(Modifier.height(16.dp)) }
         item { AboutCard() }
     }
 }
 
 @Composable
-fun ApiKeyCard(context: Context) {
-    val prefs   = context.getSharedPreferences("ai_keyboard_prefs", Context.MODE_PRIVATE)
-    var key     by remember { mutableStateOf(prefs.getString("gemini_api_key", "") ?: "") }
-    var saved   by remember { mutableStateOf(false) }
-    var showKey by remember { mutableStateOf(false) }
+fun ProviderCard(context: Context, selectedId: String, onSelect: (String) -> Unit) {
+    val provider = providerById(selectedId)
+
+    // Field state resets whenever the selected provider changes.
+    var key      by remember(selectedId) { mutableStateOf(apiKeyFor(context, provider)) }
+    var endpoint by remember(selectedId) { mutableStateOf(endpointFor(context, provider)) }
+    var model    by remember(selectedId) { mutableStateOf(modelFor(context, provider)) }
+    var saved    by remember(selectedId) { mutableStateOf(false) }
+    var showKey  by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
@@ -1020,39 +1028,82 @@ fun ApiKeyCard(context: Context) {
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Icon(Icons.Filled.Key, null, tint = AccentAlt, modifier = Modifier.size(20.dp))
-                Text("Groq API Key", fontFamily = AppFont, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = TextPrim)
+                Text("AI Provider", fontFamily = AppFont, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = TextPrim)
             }
-            Text("Free, fast, no credit card required", fontFamily = AppFont, fontSize = 13.sp, color = TextSec)
-            Box(
-                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp))
-                    .background(Surface3).border(1.dp, Color.White.copy(0.08f), RoundedCornerShape(14.dp))
-            ) {
-                OutlinedTextField(
-                    value                = key,
-                    onValueChange        = { key = it; saved = false },
-                    placeholder          = { Text("gsk_…", fontFamily = AppFont, fontSize = 14.sp, color = TextTert) },
-                    visualTransformation = if (showKey) VisualTransformation.None else PasswordVisualTransformation(),
-                    modifier             = Modifier.fillMaxWidth(),
-                    singleLine           = true,
-                    colors               = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor   = Accent.copy(0.4f),
-                        unfocusedBorderColor = Color.Transparent,
-                        focusedTextColor     = TextPrim, unfocusedTextColor = TextPrim, cursorColor = AccentAlt
-                    ),
-                    textStyle    = TextStyle(fontFamily = AppFont, fontSize = 14.sp, color = TextPrim),
-                    shape        = RoundedCornerShape(14.dp),
-                    trailingIcon = {
+            Text("Choose which AI powers TypeShift.", fontFamily = AppFont, fontSize = 13.sp, color = TextSec)
+
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(AI_PROVIDERS) { p ->
+                    val selected = p.id == selectedId
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(50.dp))
+                            .background(if (selected) Accent else Surface3)
+                            .border(1.dp, if (selected) Accent else Color.White.copy(0.08f), RoundedCornerShape(50.dp))
+                            .clickable { setSelectedProviderId(context, p.id); onSelect(p.id) }
+                            .padding(horizontal = 16.dp, vertical = 9.dp)
+                    ) {
                         Text(
-                            if (showKey) "Hide" else "Show",
-                            modifier = Modifier.clickable { showKey = !showKey }.padding(8.dp),
-                            fontFamily = AppFont, fontWeight = FontWeight.Medium, fontSize = 13.sp, color = AccentAlt
+                            p.name,
+                            fontFamily = AppFont,
+                            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
+                            fontSize   = 13.sp,
+                            color      = if (selected) Color.White else TextSec
                         )
                     }
-                )
+                }
             }
+
+            if (provider.needsKey || provider.custom) {
+                Text(
+                    if (provider.needsKey) "${provider.name} API Key" else "API Key (optional)",
+                    fontFamily = AppFont, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = TextPrim
+                )
+                Box(
+                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp))
+                        .background(Surface3).border(1.dp, Color.White.copy(0.08f), RoundedCornerShape(14.dp))
+                ) {
+                    OutlinedTextField(
+                        value                = key,
+                        onValueChange        = { key = it; saved = false },
+                        placeholder          = { Text(provider.keyHint, fontFamily = AppFont, fontSize = 14.sp, color = TextTert) },
+                        visualTransformation = if (showKey) VisualTransformation.None else PasswordVisualTransformation(),
+                        modifier             = Modifier.fillMaxWidth(),
+                        singleLine           = true,
+                        colors               = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor   = Accent.copy(0.4f),
+                            unfocusedBorderColor = Color.Transparent,
+                            focusedTextColor     = TextPrim, unfocusedTextColor = TextPrim, cursorColor = AccentAlt
+                        ),
+                        textStyle    = TextStyle(fontFamily = AppFont, fontSize = 14.sp, color = TextPrim),
+                        shape        = RoundedCornerShape(14.dp),
+                        trailingIcon = {
+                            Text(
+                                if (showKey) "Hide" else "Show",
+                                modifier = Modifier.clickable { showKey = !showKey }.padding(8.dp),
+                                fontFamily = AppFont, fontWeight = FontWeight.Medium, fontSize = 13.sp, color = AccentAlt
+                            )
+                        }
+                    )
+                }
+            }
+
+            if (provider.custom) {
+                Text("Server URL", fontFamily = AppFont, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = TextPrim)
+                ProviderTextField(endpoint, "https://…/v1/chat/completions") { endpoint = it; saved = false }
+            }
+
+            Text("Model", fontFamily = AppFont, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = TextPrim)
+            ProviderTextField(model, provider.defaultModel.ifBlank { "model name" }) { model = it; saved = false }
+
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Button(
-                    onClick  = { prefs.edit().putString("gemini_api_key", key.trim()).apply(); saved = true },
+                    onClick  = {
+                        saveApiKey(context, provider, key)
+                        saveModel(context, provider, model)
+                        if (provider.custom) saveEndpoint(context, provider, endpoint)
+                        saved = true
+                    },
                     modifier = Modifier.height(46.dp),
                     shape    = RoundedCornerShape(50.dp),
                     colors   = ButtonDefaults.buttonColors(containerColor = Accent)
@@ -1061,8 +1112,37 @@ fun ApiKeyCard(context: Context) {
                 }
                 if (saved) Text("✓  Saved", fontFamily = AppFont, fontWeight = FontWeight.Medium, fontSize = 14.sp, color = Success)
             }
-            Text("Get your free key at console.groq.com", fontFamily = AppFont, fontSize = 12.sp, color = TextTert)
+
+            if (provider.getKeyUrl.isNotEmpty()) {
+                Text(
+                    if (provider.needsKey) "Get a key at ${provider.getKeyUrl}" else "Setup guide: ${provider.getKeyUrl}",
+                    fontFamily = AppFont, fontSize = 12.sp, color = TextTert
+                )
+            }
         }
+    }
+}
+
+@Composable
+private fun ProviderTextField(value: String, placeholder: String, onValueChange: (String) -> Unit) {
+    Box(
+        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp))
+            .background(Surface3).border(1.dp, Color.White.copy(0.08f), RoundedCornerShape(14.dp))
+    ) {
+        OutlinedTextField(
+            value         = value,
+            onValueChange = onValueChange,
+            placeholder   = { Text(placeholder, fontFamily = AppFont, fontSize = 14.sp, color = TextTert) },
+            modifier      = Modifier.fillMaxWidth(),
+            singleLine    = true,
+            colors        = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor   = Accent.copy(0.4f),
+                unfocusedBorderColor = Color.Transparent,
+                focusedTextColor     = TextPrim, unfocusedTextColor = TextPrim, cursorColor = AccentAlt
+            ),
+            textStyle = TextStyle(fontFamily = AppFont, fontSize = 14.sp, color = TextPrim),
+            shape     = RoundedCornerShape(14.dp)
+        )
     }
 }
 
@@ -1120,7 +1200,10 @@ fun TemperatureCard(context: Context) {
 }
 
 @Composable
-fun ModelInfoCard() {
+fun ModelInfoCard(context: Context, selectedId: String) {
+    val provider = providerById(selectedId)
+    val model    = modelFor(context, provider)
+
     Box(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
             .clip(RoundedCornerShape(20.dp))
@@ -1135,9 +1218,9 @@ fun ModelInfoCard() {
                 contentAlignment = Alignment.Center
             ) { Text("⚡", fontSize = 20.sp) }
             Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                Text("AI Model",               fontFamily = AppFont, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = TextPrim)
-                Text("llama-3.3-70b-versatile",fontFamily = AppFont, fontSize = 13.sp, color = AccentAlt)
-                Text("via Groq — ~300ms response time", fontFamily = AppFont, fontSize = 12.sp, color = TextSec)
+                Text("Active Model", fontFamily = AppFont, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = TextPrim)
+                Text(model.ifBlank { "not set" }, fontFamily = AppFont, fontSize = 13.sp, color = AccentAlt)
+                Text("via ${provider.name}", fontFamily = AppFont, fontSize = 12.sp, color = TextSec)
             }
         }
     }

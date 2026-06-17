@@ -36,15 +36,18 @@
 - [x] **Add splash screen** — `core-splashscreen` + `Theme.AIKeyboard.Starting` + `installSplashScreen()`
 - [x] **Fix versionCode/versionName** — now driven by CI from tag (`VERSION_NAME`) + run number (`VERSION_CODE`)
 - [ ] **macOS CI workflow** — add `.github/workflows/release-macos.yml`: `xcodegen generate` + `xcodebuild archive` + zip + upload to release
+- [x] **Fix "Improve returns unrelated text" (Android)** — instruction now in `system` message + body built with `JSONObject` (was manual string escaping that broke on quotes/tabs/newlines)
+- [x] **Multi-provider support (Android)** — `Providers.kt` with Groq/OpenAI/OpenRouter/Together/DeepSeek/Mistral/Local/Custom; provider picker + per-provider key/model/endpoint in Settings; one OpenAI-compatible code path; cleartext enabled for local servers
 
 ---
 
 ## Phase 2 — Next 📋
 
+- [ ] **Port multi-provider to macOS + Windows** — same provider model; backs the CV "configurable AI provider support" claim across all platforms
 - [ ] **`?undo` on Windows** — verify TextProcessor.cs correctly stores and restores original text
 - [ ] **Windows tray: show processing indicator** — currently no visual feedback while Groq processes
 - [ ] **Android Play Protect submission** — submit to Google's accessibility app whitelist to avoid "harmful app" warning on debug builds
-- [ ] **Unify macOS prompt structure with Android** — macOS uses `role: system` for instruction; Android folds it into `role: user`. Pick one and align.
+- [ ] **Unify macOS prompt structure with Android** — both now use `role: system` for instruction; verify consistency
 - [ ] **`?translate:XX` test on all platforms** — verify the regex-based detection works correctly on macOS and Windows
 - [ ] **Error handling on Windows** — TextProcessor.cs has no UI feedback when Groq fails; add tray notification or balloon tip
 - [ ] **macOS: `?undo` store per-field** — currently `lastOriginal` is a single string; concurrent edits across fields could corrupt it
