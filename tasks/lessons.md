@@ -2,6 +2,24 @@
 
 ---
 
+## L-009 · Never let multiple workflows write to the same GitHub Release
+
+**Problem:** Releases failed intermittently — "Unexpected error fetching GitHub release for tag…" (HTML error page instead of JSON).
+**Root cause:** Three separate workflows (android/macos/windows) fired on the same `v*` tag and raced to create the *same* release. Concurrent `action-gh-release` calls collide.
+**Fix:** One workflow; each platform builds in parallel and uploads an artifact; a single fan-in `release` job (`needs:` all, `if: always()`) publishes once.
+**Prevention rule:** Only ONE job may create/update a given release/tag. Use parallel build jobs + one release job — never multiple workflows targeting the same tag.
+
+---
+
+## L-010 · Windows project enables WPF + WinForms → type-name clashes
+
+**Problem:** Windows build failed with ~40 `CS0104` "ambiguous reference" errors (Color, Button, FontFamily, Brushes, Orientation, Application…).
+**Root cause:** `<UseWPF>` and `<UseWindowsForms>` are both true (WinForms needed for the tray `NotifyIcon`), so common type names exist in both `System.Windows.*` and `System.Drawing`/`System.Windows.Forms`, pulled in via ImplicitUsings.
+**Fix:** Per-file `using X = System.Windows...X;` aliases in the WPF code-behind files. Also `Settings.Default.X` → `Settings.X` (the Settings class is a hand-rolled static, not generated).
+**Prevention rule:** In any `.cs` mixing WPF + WinForms, alias clashing types to the WPF namespace at the top of the file. WPF cannot be compiled on macOS — rely on CI to verify.
+
+---
+
 ## L-001 · Android SharedPreferences key is "gemini_api_key" not "groq_api_key"
 
 **Problem:** The Android app stores the Groq API key under `"gemini_api_key"` in SharedPreferences.

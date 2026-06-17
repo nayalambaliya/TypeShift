@@ -3,6 +3,34 @@
 
 ---
 
+## 2026-06-17 · Claude Opus 4.8 · Fix recurring release failures + Windows compile errors
+
+**Mode:** Researcher + Builder
+
+**Did:**
+- **Root-caused the "release fails every time" problem:** three separate workflows (`release-android.yml`, `release-macos.yml`, `release-windows.yml`) all triggered on the same `v*` tag and raced to create the *same* GitHub Release. Concurrent release creation returned HTML error pages ("Unexpected error fetching GitHub release for tag…"), so one job won and the others failed. The builds themselves were fine.
+- **Fixed it:** merged all three into one `release.yml` — `build-android`/`build-macos`/`build-windows` run in parallel and upload artifacts; a single `release` job (`needs:` all three, `if: always()`) publishes everything in one `action-gh-release` call. No more race.
+- **Fixed the Windows compile errors** (the app was written but never actually compiled before): `CS0104` ambiguous references because the project enables both WPF and WinForms — aliased `Color/FontFamily/Brushes/Orientation/Button/HorizontalAlignment/VerticalAlignment` to WPF in `MainWindow.xaml.cs`, `Application` to WPF in `TextProcessor.cs`; fixed `Settings.Default.X` → `Settings.X` (`CS0117`).
+- v1.7 release built **all three platforms green** and attached APK + macOS zip + Windows EXE. Cleaned up partial v1.4/v1.5/v1.6 releases.
+
+**State:**
+- CI: ✅ One consolidated workflow, all three platforms passing.
+- Windows: ✅ Now actually compiles + publishes a self-contained EXE (first successful Windows build).
+
+**Decided:**
+- One release workflow with a fan-in `release` job is the correct pattern — never have multiple workflows write to the same release/tag concurrently.
+
+**Next:**
+- Port multi-provider to macOS + Windows
+- Optional: bump action versions off deprecated Node 20
+
+**Modified:**
+- `.github/workflows/release.yml` (new, replaces the three)
+- deleted `release-android.yml`, `release-macos.yml`, `release-windows.yml`
+- `windows/MainWindow.xaml.cs`, `windows/Core/TextProcessor.cs`
+
+---
+
 ## 2026-06-17 · Claude Opus 4.8 · AI prompt fix + multi-provider support (Android)
 
 **Mode:** Builder
