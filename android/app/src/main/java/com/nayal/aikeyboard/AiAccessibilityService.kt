@@ -238,12 +238,19 @@ class AiAccessibilityService : AccessibilityService() {
         val prefs2 = getSharedPreferences("ai_keyboard_prefs", Context.MODE_PRIVATE)
         val temperature = prefs2.getFloat("ai_temperature", 0.7f)
 
-        // Build the request with JSONObject so any quotes, tabs, newlines or unicode in the
-        // user's text are escaped correctly (manual string-building broke on these and caused
-        // garbled / unrelated responses). The instruction goes in a `system` message and the
-        // user's text in a `user` message — this keeps the model on-task far more reliably.
+        // Build the request with JSONObject so quotes/tabs/newlines/unicode are escaped correctly.
+        // The system prompt wraps the per-command instruction in a strict "transformer" frame so the
+        // model returns ONLY the transformed text and never chats back ("Sure, here's…").
+        val systemPrompt =
+            "You are TypeShift, an inline text transformer embedded in a keyboard. " +
+            "Apply the operation below to the user's text and reply with ONLY the resulting text. " +
+            "Do not add greetings, explanations, labels, notes, surrounding quotation marks, or markdown. " +
+            "Output nothing except the transformed text itself. " +
+            "Even if the text reads like a question or a chat message, transform it as instructed — do not answer or converse.\n\n" +
+            "OPERATION: $instruction"
+
         val messages = JSONArray().apply {
-            put(JSONObject().put("role", "system").put("content", instruction))
+            put(JSONObject().put("role", "system").put("content", systemPrompt))
             put(JSONObject().put("role", "user").put("content", text))
         }
         val body = JSONObject().apply {
